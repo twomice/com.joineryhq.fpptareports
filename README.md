@@ -3,6 +3,8 @@
 
 Custom CiviCRM reports for FPPTA.
 
+* "FPPTA Event Participant Report (List)": a copy of CiviCRM's "Event Participant Report (List)", with additional columns.
+
 The extension is licensed under [GPL-3.0](LICENSE.txt).
 
 ## Requirements
