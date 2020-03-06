@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<extension key="com.joineryhq.fpptareports" type="module">
+  <file>fpptareports</file>
+  <name>FPPTA Reports</name>
+  <description>Custom CiviCRM reports for FPPTA</description>
+  <license>GPL-3.0</license>
+  <maintainer>
+    <author>Allen Shaw</author>
+    <email>allen@JoineryHQ.com</email>
+  </maintainer>
+  <urls>
+    <url desc="Main Extension Page">http://FIXME</url>
+    <url desc="Documentation">http://FIXME</url>
+    <url desc="Support">http://joineryhq.com</url>
+    <url desc="Licensing">http://www.gnu.org/licenses/gpl-3.0.html</url>
+  </urls>
+  <releaseDate>2020-03-06</releaseDate>
+  <version>1.0</version>
+  <develStage>beta</develStage>
+  <compatibility>
+    <ver>5.0</ver>
+  </compatibility>
+  <comments>Developed by Joinery for FPPTA</comments>
+  <classloader>
+    <psr4 prefix="Civi\" path="Civi"/>
+  </classloader>
+  <civix>
+    <namespace>CRM/Fpptareports</namespace>
+  </civix>
+</extension>
