@@ -152,12 +152,12 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
           'participant_register_date' => array('title' => ts('Registration Date')),
           'total_paid' => array(
             'title' => ts('Total Paid'),
-            'dbAlias' => 'IFNULL(SUM(ft.total_amount), 0)',
+            'dbAlias' => 'IFNULL(SUM(ft_civireport.total_amount), 0)',
             'type' => 1024,
           ),
           'balance' => array(
             'title' => ts('Balance'),
-            'dbAlias' => 'participant_civireport.fee_amount - IFNULL(SUM(ft.total_amount), 0)',
+            'dbAlias' => 'participant_civireport.fee_amount - IFNULL(SUM(ft_civireport.total_amount), 0)',
             'type' => 1024,
           ),
         ),
@@ -360,6 +360,7 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
       ),
       'civicrm_financial_trxn' => array(
         'dao' => 'CRM_Financial_DAO_FinancialTrxn',
+        'alias' => 'ft',
         'grouping' => 'contrib-fields',
         'fields' => array(
           'pan_truncation' => array(
@@ -453,7 +454,7 @@ ORDER BY  cv.label
               // modify the select if filtered by fee_level as the from clause
               // already selects the total_amount from civicrm_contribution table
               if (!empty($this->_params['price_field_value_id_value'])) {
-                $field['dbAlias'] = str_replace('SUM(ft.total_amount)', 'ft.total_amount', $field['dbAlias']);
+                $field['dbAlias'] = str_replace('SUM(ft_civireport.total_amount)', 'ft_civireport.total_amount', $field['dbAlias']);
               }
             }
             $alias = "{$tableName}_{$fieldName}";
