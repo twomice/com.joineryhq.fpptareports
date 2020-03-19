@@ -294,9 +294,9 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
             'title' => ts('Contribution ID'),
           ),
           'financial_type_id' => array('title' => ts('Financial Type')),
-          'receive_date' => array('title' => ts('Payment Date')),
+          'receive_date' => array('title' => ts('Contribution Date')),
           'contribution_status_id' => array('title' => ts('Contribution Status')),
-          'payment_instrument_id' => array('title' => ts('Payment Type')),
+          'payment_instrument_id' => array('title' => ts('Contribution Payment Type')),
           'contribution_source' => array(
             'name' => 'source',
             'title' => ts('Contribution Source'),
@@ -306,16 +306,13 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
             'no_display' => TRUE,
           ),
           'trxn_id' => NULL,
-          'fee_amount' => array('title' => ts('Transaction Fee')),
-          'net_amount' => NULL,
           'trxn_id' => array('title' => ts('Transaction ID')),
-          'check_number' => array('title' => ts('Check Number')),
           'invoice_number' => array('title' => ts('Invoice Number')),
         ),
         'grouping' => 'contrib-fields',
         'filters' => array(
           'receive_date' => array(
-            'title' => ts('Payment Date'),
+            'title' => ts('Contribution Date'),
             'operatorType' => CRM_Report_Form::OP_DATE,
           ),
           'financial_type_id' => array(
@@ -330,12 +327,6 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
             'options' => CRM_Core_OptionGroup::values('currencies_enabled'),
             'default' => NULL,
             'type' => CRM_Utils_Type::T_STRING,
-          ),
-          'payment_instrument_id' => array(
-            'title' => ts('Payment Type'),
-            'type' => CRM_Utils_Type::T_INT,
-            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
-            'options' => CRM_Contribute_PseudoConstant::paymentInstrument(),
           ),
           'contribution_status_id' => array(
             'title' => ts('Contribution Status'),
@@ -361,10 +352,35 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
       'civicrm_financial_trxn' => array(
         'dao' => 'CRM_Financial_DAO_FinancialTrxn',
         'alias' => 'ft',
-        'grouping' => 'contrib-fields',
+        'grouping' => 'trxn-fields',
         'fields' => array(
+          'trxn_date' => array(
+            'title' => ts('Payment Date'),
+            'dbAlias' => 'group_concat(ft_civireport.trxn_date ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
+          ),
+          'payment_instrument_id' => array(
+            'title' => ts('Payment Method'),
+            'dbAlias' => 'group_concat(ft_civireport.payment_instrument_id ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
+          ),
+          'check_number' => array(
+            'title' => ts('Check Number'),
+            'dbAlias' => 'group_concat(ft_civireport.check_number ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
+          ),
+          'total_amount' => array(
+            'title' => ts('Payment Amount'),
+            'dbAlias' => 'group_concat(ft_civireport.total_amount ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
+          ),
+          'fee_amount' => array(
+            'title' => ts('Payment Fee'),
+            'dbAlias' => 'group_concat(ft_civireport.fee_amount ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
+          ),
+          'net_amount' => array(
+            'title' => ts('Payment Net'),
+            'dbAlias' => 'group_concat(ft_civireport.net_amount ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
+          ),
           'pan_truncation' => array(
             'title' => ts('CC Last 4'),
+            'dbAlias' => 'group_concat(ft_civireport.pan_truncation ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
           ),
         ),
       ),
@@ -423,10 +439,6 @@ ORDER BY  cv.label
     }
 
     return $elements;
-  }
-
-  public function preProcess() {
-    parent::preProcess();
   }
 
   public function select() {
@@ -517,10 +529,15 @@ ORDER BY  cv.label
 
     if ($this->_contribField) {
       $this->_from .= "
-             LEFT JOIN civicrm_participant_payment pp
-                    ON ({$this->_aliases['civicrm_participant']}.id  = pp.participant_id)
-             LEFT JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
-                    ON (pp.contribution_id  = {$this->_aliases['civicrm_contribution']}.id)
+            LEFT JOIN civicrm_participant_payment pp
+                   ON ({$this->_aliases['civicrm_participant']}.id  = pp.participant_id)
+            LEFT JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
+                   ON (pp.contribution_id  = {$this->_aliases['civicrm_contribution']}.id)
+            LEFT JOIN civicrm_entity_financial_trxn eft
+                  ON eft.entity_id = {$this->_aliases['civicrm_contribution']}.id AND eft.entity_table = 'civicrm_contribution'
+            LEFT JOIN civicrm_financial_trxn {$this->_aliases['civicrm_financial_trxn']}
+                  ON {$this->_aliases['civicrm_financial_trxn']}.id = eft.financial_trxn_id AND
+                     {$this->_aliases['civicrm_financial_trxn']}.is_payment = 1
       ";
     }
     if (!empty($this->_params['price_field_value_id_value'])) {
@@ -529,15 +546,6 @@ ORDER BY  cv.label
                   ON line_item_civireport.entity_table = 'civicrm_participant' AND
                      line_item_civireport.entity_id = {$this->_aliases['civicrm_participant']}.id AND
                      line_item_civireport.qty > 0
-      ";
-    }
-    if ($this->_balance || $this->isTableSelected('civicrm_financial_trxn')) {
-      $this->_from .= "
-            LEFT JOIN civicrm_entity_financial_trxn eft
-                  ON eft.entity_id = {$this->_aliases['civicrm_contribution']}.id AND eft.entity_table = 'civicrm_contribution'
-            LEFT JOIN civicrm_financial_trxn {$this->_aliases['civicrm_financial_trxn']}
-                  ON {$this->_aliases['civicrm_financial_trxn']}.id = eft.financial_trxn_id AND
-                     {$this->_aliases['civicrm_financial_trxn']}.is_payment = 1
       ";
     }
   }
@@ -651,6 +659,7 @@ ORDER BY  cv.label
     $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'label');
     $paymentInstruments = CRM_Contribute_PseudoConstant::paymentInstrument();
 
+    $multiSeparator = ';<BR />';
     foreach ($rows as $rowNum => $row) {
       // make count columns point to detail report
       // convert display name to links
@@ -713,6 +722,58 @@ ORDER BY  cv.label
           CRM_Event_BAO_Participant::fixEventLevel($feeLevel);
           $rows[$rowNum]['civicrm_participant_participant_fee_level'] = $feeLevel;
         }
+        $entryFound = TRUE;
+      }
+
+      // Handle comma-separated dates
+      if (array_key_exists('civicrm_financial_trxn_trxn_date', $row)) {
+        $values = [];
+        $trxnDates = explode(CRM_Core_DAO::VALUE_SEPARATOR, $row['civicrm_financial_trxn_trxn_date']);
+        foreach ($trxnDates as $trxnDate) {
+          $values[] = CRM_Utils_Date::customFormat($trxnDate);
+        }
+        $rows[$rowNum]['civicrm_financial_trxn_trxn_date'] = implode($multiSeparator, $values);
+        $entryFound = TRUE;
+      }
+
+      // Handle comma-separated payment methods
+      if (array_key_exists('civicrm_financial_trxn_payment_instrument_id', $row)) {
+        $values = [];
+        $paymentInstrumentIds = explode(CRM_Core_DAO::VALUE_SEPARATOR, $row['civicrm_financial_trxn_payment_instrument_id']);
+        foreach ($paymentInstrumentIds as $paymentInstrumentId) {
+          $values[] = $paymentInstruments[$paymentInstrumentId];
+        }
+        $rows[$rowNum]['civicrm_financial_trxn_payment_instrument_id'] = implode($multiSeparator, $values);
+        $entryFound = TRUE;
+      }
+
+      // Handle comma-separated check numbers
+      if (array_key_exists('civicrm_financial_trxn_check_number', $row)) {
+        $rows[$rowNum]['civicrm_financial_trxn_check_number'] = str_replace(CRM_Core_DAO::VALUE_SEPARATOR, $multiSeparator, $rows[$rowNum]['civicrm_financial_trxn_check_number']);
+        $entryFound = TRUE;
+      }
+
+      // Handle comma-separated "last 4"
+      if (array_key_exists('civicrm_financial_trxn_pan_truncation', $row)) {
+        $rows[$rowNum]['civicrm_financial_trxn_pan_truncation'] = str_replace(CRM_Core_DAO::VALUE_SEPARATOR, $multiSeparator, $rows[$rowNum]['civicrm_financial_trxn_pan_truncation']);
+        $entryFound = TRUE;
+      }
+
+      // Handle comma-separated "payment amount"
+      if (array_key_exists('civicrm_financial_trxn_total_amount', $row)) {
+        $rows[$rowNum]['civicrm_financial_trxn_total_amount'] = str_replace(CRM_Core_DAO::VALUE_SEPARATOR, $multiSeparator, $rows[$rowNum]['civicrm_financial_trxn_total_amount']);
+        $entryFound = TRUE;
+      }
+
+      // Handle comma-separated "fee amount"
+      if (array_key_exists('civicrm_financial_trxn_fee_amount', $row)) {
+        $rows[$rowNum]['civicrm_financial_trxn_fee_amount'] = str_replace(CRM_Core_DAO::VALUE_SEPARATOR, $multiSeparator, $rows[$rowNum]['civicrm_financial_trxn_fee_amount']);
+        $entryFound = TRUE;
+      }
+
+      // Handle comma-separated "net amount"
+      if (array_key_exists('civicrm_financial_trxn_net_amount', $row)) {
+        $rows[$rowNum]['civicrm_financial_trxn_net_amount'] = str_replace(CRM_Core_DAO::VALUE_SEPARATOR, $multiSeparator, $rows[$rowNum]['civicrm_financial_trxn_net_amount']);
         $entryFound = TRUE;
       }
 
