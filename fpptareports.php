@@ -1,7 +1,7 @@
 <?php
 
 require_once 'fpptareports.civix.php';
-// use CRM_Fpptareports_ExtensionUtil as E;
+use CRM_Fpptareports_ExtensionUtil as E;
 
 /**
  * Implements hook_civicrm_config().
