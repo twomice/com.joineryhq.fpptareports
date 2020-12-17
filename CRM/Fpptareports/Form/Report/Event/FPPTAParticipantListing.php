@@ -9,6 +9,8 @@
  +--------------------------------------------------------------------+
  */
 
+ use CRM_Fpptareports_ExtensionUtil as E;
+
 /**
  *
  * @package CRM
