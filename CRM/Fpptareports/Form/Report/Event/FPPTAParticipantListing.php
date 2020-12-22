@@ -9,6 +9,8 @@
  +--------------------------------------------------------------------+
  */
 
+ use CRM_Fpptareports_ExtensionUtil as E;
+
 /**
  *
  * @package CRM
@@ -46,7 +48,7 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
           // CRM-17115 - to avoid changing report output at this stage re-instate
           // old field name for sort name
           'sort_name_linked' => array(
-            'title' => ts('Participant Name'),
+            'title' => E::ts('Participant Name'),
             'required' => TRUE,
             'no_repeat' => TRUE,
             'dbAlias' => 'contact_civireport.sort_name',
@@ -55,7 +57,7 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
           $this->getBasicContactFields(),
           array(
             'age_at_event' => array(
-              'title' => ts('Age at Event'),
+              'title' => E::ts('Age at Event'),
               'dbAlias' => 'TIMESTAMPDIFF(YEAR, contact_civireport.birth_date, event_civireport.start_date)',
             ),
           )
@@ -63,32 +65,32 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
         'grouping' => 'contact-fields',
         'order_bys' => array(
           'sort_name' => array(
-            'title' => ts('Last Name, First Name'),
+            'title' => E::ts('Last Name, First Name'),
             'default' => '1',
             'default_weight' => '0',
             'default_order' => 'ASC',
           ),
           'first_name' => array(
             'name' => 'first_name',
-            'title' => ts('First Name'),
+            'title' => E::ts('First Name'),
           ),
           'gender_id' => array(
             'name' => 'gender_id',
-            'title' => ts('Gender'),
+            'title' => E::ts('Gender'),
           ),
           'birth_date' => array(
             'name' => 'birth_date',
-            'title' => ts('Birth Date'),
+            'title' => E::ts('Birth Date'),
           ),
           'age_at_event' => array(
             'name' => 'age_at_event',
-            'title' => ts('Age at Event'),
+            'title' => E::ts('Age at Event'),
           ),
           'contact_type' => array(
-            'title' => ts('Contact Type'),
+            'title' => E::ts('Contact Type'),
           ),
           'contact_sub_type' => array(
-            'title' => ts('Contact Subtype'),
+            'title' => E::ts('Contact Subtype'),
           ),
         ),
         'filters' => CRM_Report_Form::getBasicContactFilters(),
@@ -97,14 +99,14 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
         'dao' => 'CRM_Core_DAO_Email',
         'fields' => array(
           'email' => array(
-            'title' => ts('Email'),
+            'title' => E::ts('Email'),
             'no_repeat' => TRUE,
           ),
         ),
         'grouping' => 'contact-fields',
         'filters' => array(
           'email' => array(
-            'title' => ts('Participant E-mail'),
+            'title' => E::ts('Participant E-mail'),
             'operator' => 'like',
           ),
         ),
@@ -115,7 +117,7 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
       'civicrm_participant' => array(
         'dao' => 'CRM_Event_DAO_Participant',
         'fields' => array(
-          'participant_id' => array('title' => ts('Participant ID')),
+          'participant_id' => array('title' => E::ts('Participant ID')),
           'participant_record' => array(
             'name' => 'id',
             'no_display' => TRUE,
@@ -126,11 +128,11 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
             'type' => CRM_Utils_Type::T_STRING,
           ),
           'status_id' => array(
-            'title' => ts('Status'),
+            'title' => E::ts('Status'),
             'default' => TRUE,
           ),
           'role_id' => array(
-            'title' => ts('Role'),
+            'title' => E::ts('Role'),
             'default' => TRUE,
           ),
           'fee_currency' => array(
@@ -138,25 +140,25 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
             'no_display' => TRUE,
           ),
           'registered_by_id' => array(
-            'title' => ts('Registered by Participant ID'),
+            'title' => E::ts('Registered by Participant ID'),
           ),
           'registered_by_name' => array(
-            'title' => ts('Registered by Participant Name'),
+            'title' => E::ts('Registered by Participant Name'),
             'name' => 'registered_by_id',
           ),
           'source' => array(
-            'title' => ts('Source'),
+            'title' => E::ts('Source'),
           ),
           'participant_fee_level' => NULL,
-          'participant_fee_amount' => array('title' => ts('Participant Fee')),
-          'participant_register_date' => array('title' => ts('Registration Date')),
+          'participant_fee_amount' => array('title' => E::ts('Participant Fee')),
+          'participant_register_date' => array('title' => E::ts('Registration Date')),
           'total_paid' => array(
-            'title' => ts('Total Paid'),
+            'title' => E::ts('Total Paid'),
             'dbAlias' => 'IFNULL(SUM(ft_civireport.total_amount), 0)',
             'type' => 1024,
           ),
           'balance' => array(
-            'title' => ts('Balance'),
+            'title' => E::ts('Balance'),
             'dbAlias' => 'participant_civireport.fee_amount - IFNULL(SUM(ft_civireport.total_amount), 0)',
             'type' => 1024,
           ),
@@ -165,7 +167,7 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
         'filters' => array(
           'event_id' => array(
             'name' => 'event_id',
-            'title' => ts('Event'),
+            'title' => E::ts('Event'),
             'operatorType' => CRM_Report_Form::OP_ENTITYREF,
             'type' => CRM_Utils_Type::T_INT,
             'attributes' => array(
@@ -175,47 +177,47 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
           ),
           'sid' => array(
             'name' => 'status_id',
-            'title' => ts('Participant Status'),
+            'title' => E::ts('Participant Status'),
             'type' => CRM_Utils_Type::T_INT,
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Event_PseudoConstant::participantStatus(NULL, NULL, 'label'),
           ),
           'rid' => array(
             'name' => 'role_id',
-            'title' => ts('Participant Role'),
+            'title' => E::ts('Participant Role'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Event_PseudoConstant::participantRole(),
           ),
           'participant_register_date' => array(
-            'title' => ts('Registration Date'),
+            'title' => E::ts('Registration Date'),
             'operatorType' => CRM_Report_Form::OP_DATE,
           ),
           'fee_currency' => array(
-            'title' => ts('Fee Currency'),
+            'title' => E::ts('Fee Currency'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Core_OptionGroup::values('currencies_enabled'),
             'default' => NULL,
             'type' => CRM_Utils_Type::T_STRING,
           ),
           'registered_by_id' => array(
-            'title' => ts('Registered by Participant ID'),
+            'title' => E::ts('Registered by Participant ID'),
             'type' => CRM_Utils_Type::T_STRING,
             'operator' => 'like',
           ),
           'source' => array(
-            'title' => ts('Source'),
+            'title' => E::ts('Source'),
             'type' => CRM_Utils_Type::T_STRING,
             'operator' => 'like',
           ),
         ),
         'order_bys' => array(
           'participant_register_date' => array(
-            'title' => ts('Registration Date'),
+            'title' => E::ts('Registration Date'),
             'default_weight' => '1',
             'default_order' => 'ASC',
           ),
           'event_id' => array(
-            'title' => ts('Event'),
+            'title' => E::ts('Event'),
             'default_weight' => '1',
             'default_order' => 'ASC',
           ),
@@ -225,7 +227,7 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
         'dao' => 'CRM_Core_DAO_Phone',
         'fields' => array(
           'phone' => array(
-            'title' => ts('Phone'),
+            'title' => E::ts('Phone'),
             'default' => TRUE,
             'no_repeat' => TRUE,
           ),
@@ -236,41 +238,41 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
         'dao' => 'CRM_Event_DAO_Event',
         'fields' => array(
           'event_type_id' => array(
-            'title' => ts('Event Type'),
+            'title' => E::ts('Event Type'),
           ),
           'event_start_date' => array(
-            'title' => ts('Event Start Date'),
+            'title' => E::ts('Event Start Date'),
           ),
           'event_end_date' => array(
-            'title' => ts('Event End Date'),
+            'title' => E::ts('Event End Date'),
           ),
         ),
         'grouping' => 'event-fields',
         'filters' => array(
           'eid' => array(
             'name' => 'event_type_id',
-            'title' => ts('Event Type'),
+            'title' => E::ts('Event Type'),
             'type' => CRM_Utils_Type::T_INT,
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Core_OptionGroup::values('event_type'),
           ),
           'event_start_date' => array(
-            'title' => ts('Event Start Date'),
+            'title' => E::ts('Event Start Date'),
             'operatorType' => CRM_Report_Form::OP_DATE,
           ),
           'event_end_date' => array(
-            'title' => ts('Event End Date'),
+            'title' => E::ts('Event End Date'),
             'operatorType' => CRM_Report_Form::OP_DATE,
           ),
         ),
         'order_bys' => array(
           'event_type_id' => array(
-            'title' => ts('Event Type'),
+            'title' => E::ts('Event Type'),
             'default_weight' => '2',
             'default_order' => 'ASC',
           ),
           'event_start_date' => array(
-            'title' => ts('Event Start Date'),
+            'title' => E::ts('Event Start Date'),
           ),
         ),
       ),
@@ -279,7 +281,7 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
         'fields' => array(
           'participant_note' => array(
             'name' => 'note',
-            'title' => ts('Participant Note'),
+            'title' => E::ts('Participant Note'),
           ),
         ),
       ),
@@ -291,45 +293,45 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
             'no_display' => TRUE,
             'required' => TRUE,
             'csv_display' => TRUE,
-            'title' => ts('Contribution ID'),
+            'title' => E::ts('Contribution ID'),
           ),
-          'financial_type_id' => array('title' => ts('Financial Type')),
-          'receive_date' => array('title' => ts('Contribution Date')),
-          'contribution_status_id' => array('title' => ts('Contribution Status')),
-          'payment_instrument_id' => array('title' => ts('Contribution Payment Type')),
+          'financial_type_id' => array('title' => E::ts('Financial Type')),
+          'receive_date' => array('title' => E::ts('Contribution Date')),
+          'contribution_status_id' => array('title' => E::ts('Contribution Status')),
+          'payment_instrument_id' => array('title' => E::ts('Contribution Payment Type')),
           'contribution_source' => array(
             'name' => 'source',
-            'title' => ts('Contribution Source'),
+            'title' => E::ts('Contribution Source'),
           ),
           'currency' => array(
             'required' => TRUE,
             'no_display' => TRUE,
           ),
           'trxn_id' => NULL,
-          'trxn_id' => array('title' => ts('Transaction ID')),
-          'invoice_number' => array('title' => ts('Invoice Number')),
+          'trxn_id' => array('title' => E::ts('Transaction ID')),
+          'invoice_number' => array('title' => E::ts('Invoice Number')),
         ),
         'grouping' => 'contrib-fields',
         'filters' => array(
           'receive_date' => array(
-            'title' => ts('Contribution Date'),
+            'title' => E::ts('Contribution Date'),
             'operatorType' => CRM_Report_Form::OP_DATE,
           ),
           'financial_type_id' => array(
-            'title' => ts('Financial Type'),
+            'title' => E::ts('Financial Type'),
             'type' => CRM_Utils_Type::T_INT,
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Contribute_PseudoConstant::financialType(),
           ),
           'currency' => array(
-            'title' => ts('Contribution Currency'),
+            'title' => E::ts('Contribution Currency'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Core_OptionGroup::values('currencies_enabled'),
             'default' => NULL,
             'type' => CRM_Utils_Type::T_STRING,
           ),
           'contribution_status_id' => array(
-            'title' => ts('Contribution Status'),
+            'title' => E::ts('Contribution Status'),
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => CRM_Contribute_BAO_Contribution::buildOptions('contribution_status_id', 'search'),
             'default' => NULL,
@@ -342,7 +344,7 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
         'filters' => array(
           'price_field_value_id' => array(
             'name' => 'price_field_value_id',
-            'title' => ts('Fee Level'),
+            'title' => E::ts('Fee Level'),
             'type' => CRM_Utils_Type::T_INT,
             'operatorType' => CRM_Report_Form::OP_MULTISELECT,
             'options' => $this->getPriceLevels(),
@@ -355,31 +357,31 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
         'grouping' => 'trxn-fields',
         'fields' => array(
           'trxn_date' => array(
-            'title' => ts('Payment Date'),
+            'title' => E::ts('Payment Date'),
             'dbAlias' => 'group_concat(ft_civireport.trxn_date ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
           ),
           'payment_instrument_id' => array(
-            'title' => ts('Payment Method'),
+            'title' => E::ts('Payment Method'),
             'dbAlias' => 'group_concat(ft_civireport.payment_instrument_id ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
           ),
           'check_number' => array(
-            'title' => ts('Check Number'),
+            'title' => E::ts('Check Number'),
             'dbAlias' => 'group_concat(ft_civireport.check_number ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
           ),
           'total_amount' => array(
-            'title' => ts('Payment Amount'),
+            'title' => E::ts('Payment Amount'),
             'dbAlias' => 'group_concat(ft_civireport.total_amount ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
           ),
           'fee_amount' => array(
-            'title' => ts('Payment Fee'),
+            'title' => E::ts('Payment Fee'),
             'dbAlias' => 'group_concat(ft_civireport.fee_amount ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
           ),
           'net_amount' => array(
-            'title' => ts('Payment Net'),
+            'title' => E::ts('Payment Net'),
             'dbAlias' => 'group_concat(ft_civireport.net_amount ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
           ),
           'pan_truncation' => array(
-            'title' => ts('CC Last 4'),
+            'title' => E::ts('CC Last 4'),
             'dbAlias' => 'group_concat(ft_civireport.pan_truncation ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
           ),
         ),
@@ -388,17 +390,17 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
 
     $this->_options = array(
       'blank_column_begin' => array(
-        'title' => ts('Blank column at the Begining'),
+        'title' => E::ts('Blank column at the Begining'),
         'type' => 'checkbox',
       ),
       'blank_column_end' => array(
-        'title' => ts('Blank column at the End'),
+        'title' => E::ts('Blank column at the End'),
         'type' => 'select',
         'options' => array(
-          '' => ts('-select-'),
-          1 => ts('One'),
-          2 => ts('Two'),
-          3 => ts('Three'),
+          '' => E::ts('-select-'),
+          1 => E::ts('One'),
+          2 => E::ts('Two'),
+          3 => E::ts('Three'),
         ),
       ),
     );
@@ -673,7 +675,7 @@ ORDER BY  cv.label
             $this->_absoluteUrl, $this->_id, $this->_drilldownReport
           );
           $rows[$rowNum]['civicrm_participant_event_id_link'] = $url;
-          $rows[$rowNum]['civicrm_participant_event_id_hover'] = ts("View Event Income Details for this Event");
+          $rows[$rowNum]['civicrm_participant_event_id_hover'] = E::ts("View Event Income Details for this Event");
         }
         $entryFound = TRUE;
       }
@@ -711,7 +713,7 @@ ORDER BY  cv.label
           $registeredByContactId = CRM_Core_DAO::getFieldValue("CRM_Event_DAO_Participant", $registeredById, 'contact_id', 'id');
           $rows[$rowNum]['civicrm_participant_registered_by_name'] = CRM_Contact_BAO_Contact::displayName($registeredByContactId);
           $rows[$rowNum]['civicrm_participant_registered_by_name_link'] = CRM_Utils_System::url('civicrm/contact/view', 'reset=1&cid=' . $registeredByContactId, $this->_absoluteUrl);
-          $rows[$rowNum]['civicrm_participant_registered_by_name_hover'] = ts('View Contact Summary for Contact that registered the participant.');
+          $rows[$rowNum]['civicrm_participant_registered_by_name_hover'] = E::ts('View Contact Summary for Contact that registered the participant.');
         }
       }
 
@@ -792,15 +794,15 @@ ORDER BY  cv.label
           "reset=1&id=$id&cid=$cid&action=view&context=participant"
         );
 
-        $contactTitle = ts('View Contact Details');
-        $participantTitle = ts('View Participant Record');
+        $contactTitle = E::ts('View Contact Details');
+        $participantTitle = E::ts('View Participant Record');
 
         $rows[$rowNum]['civicrm_contact_sort_name_linked'] = "<a title='$contactTitle' href=$url>$displayName</a>";
         // Add a "View" link to the participant record if this isn't a CSV/PDF/printed document.
         if ($this->_outputMode !== 'csv' && $this->_outputMode !== 'pdf' && $this->_outputMode !== 'print') {
           $rows[$rowNum]['civicrm_contact_sort_name_linked'] .=
             "<span style='float: right;'><a title='$participantTitle' href=$viewUrl>" .
-            ts('View') . "</a></span>";
+            E::ts('View') . "</a></span>";
         }
         $entryFound = TRUE;
       }
