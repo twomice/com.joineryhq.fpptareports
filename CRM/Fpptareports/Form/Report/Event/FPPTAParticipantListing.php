@@ -741,7 +741,7 @@ ORDER BY  cv.label
         $values = [];
         $paymentInstrumentIds = explode(CRM_Core_DAO::VALUE_SEPARATOR, $row['civicrm_financial_trxn_payment_instrument_id']);
         foreach ($paymentInstrumentIds as $paymentInstrumentId) {
-          $values[] = $paymentInstruments[$paymentInstrumentId];
+          $values[] = CRM_Utils_Array::value($paymentInstrumentId, $paymentInstruments);
         }
         $rows[$rowNum]['civicrm_financial_trxn_payment_instrument_id'] = implode($multiSeparator, $values);
         $entryFound = TRUE;
