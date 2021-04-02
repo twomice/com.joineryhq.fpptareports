@@ -333,6 +333,7 @@ class CRM_Fpptareports_Form_Report_Contribute_Extra extends CRM_Report_Form {
           ON {$this->_aliases['contributor_org']}.id = 
             if({$this->_aliases['civicrm_contact']}.id = r_contributor_org.contact_id_a, r_contributor_org.contact_id_b, r_contributor_org.contact_id_a)
           AND {$this->_aliases['contributor_org']}.contact_type = 'organization'  
+          AND NOT {$this->_aliases['contributor_org']}.is_deleted
       ";
     }
     if ($this->isTableSelected('soft_credit_contact')) {
@@ -341,6 +342,7 @@ class CRM_Fpptareports_Form_Report_Contribute_Extra extends CRM_Report_Form {
           ON {$this->_aliases['civicrm_contribution']}.id = soft.contribution_id
         LEFT JOIN civicrm_contact {$this->_aliases['soft_credit_contact']}
           ON {$this->_aliases['soft_credit_contact']}.id = soft.contact_id
+          AND NOT {$this->_aliases['soft_credit_contact']}.is_deleted
       ";
     }
     if ($this->isTableSelected('attendee_contact') || $this->isTableSelected('civicrm_value_participant_d_21')) {
@@ -355,6 +357,7 @@ class CRM_Fpptareports_Form_Report_Contribute_Extra extends CRM_Report_Form {
           ON otherpart.registered_by_id = partpay.participant_id
         LEFT JOIN civicrm_contact {$this->_aliases['attendee_contact']}
           ON {$this->_aliases['attendee_contact']}.id = otherpart.contact_id
+          AND NOT {$this->_aliases['attendee_contact']}.is_deleted
       ";
     }
     if ($this->isTableSelected('civicrm_value_participant_d_21')) {
