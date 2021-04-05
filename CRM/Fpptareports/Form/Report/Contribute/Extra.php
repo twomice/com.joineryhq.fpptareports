@@ -302,7 +302,24 @@ class CRM_Fpptareports_Form_Report_Contribute_Extra extends CRM_Report_Form {
     $this->_from .= "
       INNER JOIN civicrm_contribution {$this->_aliases['civicrm_contribution']}
         ON {$this->_aliases['civicrm_contact']}.id = {$this->_aliases['civicrm_contribution']}.contact_id
-        AND {$this->_aliases['civicrm_contribution']}.is_test = 0";
+        AND {$this->_aliases['civicrm_contribution']}.is_test = 0
+    ";
+    if ($this->isTableSelected('civicrm_note')) {
+      $this->_from .= "
+        LEFT JOIN civicrm_note {$this->_aliases['civicrm_note']}
+          ON {$this->_aliases['civicrm_note']}.entity_table = 'civicrm_contribution'
+          AND {$this->_aliases['civicrm_note']}.entity_id = {$this->_aliases['civicrm_contribution']}.id
+      ";
+    }
+    if ($this->isTableSelected('civicrm_financial_trxn')) {
+      $this->_from .= "
+        LEFT JOIN civicrm_entity_financial_trxn eft
+          ON eft.entity_table = 'civicrm_contribution'
+          AND eft.entity_id = {$this->_aliases['civicrm_contribution']}.id
+        LEFT JOIN civicrm_financial_trxn {$this->_aliases['civicrm_financial_trxn']}
+          ON {$this->_aliases['civicrm_financial_trxn']}.id = eft.financial_trxn_id
+      ";
+    }
     if ($this->isTableSelected('civicrm_email')) {
       $this->_from .= "
         LEFT JOIN civicrm_email {$this->_aliases['civicrm_email']} 
