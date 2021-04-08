@@ -253,7 +253,7 @@ class CRM_Fpptareports_Form_Report_Contribute_Extra extends CRM_Report_Form {
             ],
           ],
           'grouping' => 'extra-fields',
-        ],        
+        ],
         'attendee_contact' => [
           'alias' => 'attendee_contact',
           'fields' => [
@@ -263,7 +263,7 @@ class CRM_Fpptareports_Form_Report_Contribute_Extra extends CRM_Report_Form {
             ],
           ],
           'grouping' => 'extra-fields',
-        ],        
+        ],
         'attendee_contact_org' => [
           'alias' => 'attendee_contact_org',
           'fields' => [
@@ -282,9 +282,9 @@ class CRM_Fpptareports_Form_Report_Contribute_Extra extends CRM_Report_Form {
             ],
           ],
           'grouping' => 'extra-fields',
-        ],        
+        ],
       ]
-      
+
     );
     // The tests test for this variation of the sort_name field. Don't argue with the tests :-).
     $this->_groupFilter = TRUE;
@@ -294,7 +294,7 @@ class CRM_Fpptareports_Form_Report_Contribute_Extra extends CRM_Report_Form {
 
     $this->_currencyColumn = 'civicrm_contribution_currency';
     parent::__construct();
-    
+
   }
 
   /**
@@ -335,34 +335,34 @@ class CRM_Fpptareports_Form_Report_Contribute_Extra extends CRM_Report_Form {
     }
     if ($this->isTableSelected('civicrm_email')) {
       $this->_from .= "
-        LEFT JOIN civicrm_email {$this->_aliases['civicrm_email']} 
+        LEFT JOIN civicrm_email {$this->_aliases['civicrm_email']}
           ON {$this->_aliases['civicrm_email']}.contact_id = {$this->_aliases['civicrm_contact']}.id
           AND {$this->_aliases['civicrm_email']}.is_primary
       ";
     }
     if ($this->isTableSelected('civicrm_phone')) {
       $this->_from .= "
-        LEFT JOIN civicrm_phone {$this->_aliases['civicrm_phone']} 
+        LEFT JOIN civicrm_phone {$this->_aliases['civicrm_phone']}
           ON {$this->_aliases['civicrm_phone']}.contact_id = {$this->_aliases['civicrm_contact']}.id
           AND {$this->_aliases['civicrm_phone']}.is_primary
       ";
     }
     if ($this->isTableSelected('civicrm_address')) {
       $this->_from .= "
-        LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']} 
+        LEFT JOIN civicrm_address {$this->_aliases['civicrm_address']}
           ON {$this->_aliases['civicrm_address']}.contact_id = {$this->_aliases['civicrm_contact']}.id
           AND {$this->_aliases['civicrm_address']}.is_primary
       ";
     }
     if ($this->isTableSelected('contributor_org')) {
       $this->_from .= "
-        LEFT JOIN civicrm_relationship r_contributor_org 
+        LEFT JOIN civicrm_relationship r_contributor_org
           ON {$this->_aliases['civicrm_contact']}.id IN (r_contributor_org.contact_id_a, r_contributor_org.contact_id_b)
           AND r_contributor_org.is_active
         LEFT JOIN civicrm_contact {$this->_aliases['contributor_org']}
-          ON {$this->_aliases['contributor_org']}.id = 
+          ON {$this->_aliases['contributor_org']}.id =
             if({$this->_aliases['civicrm_contact']}.id = r_contributor_org.contact_id_a, r_contributor_org.contact_id_b, r_contributor_org.contact_id_a)
-          AND {$this->_aliases['contributor_org']}.contact_type = 'organization'  
+          AND {$this->_aliases['contributor_org']}.contact_type = 'organization'
           AND NOT {$this->_aliases['contributor_org']}.is_deleted
       ";
     }
@@ -641,4 +641,5 @@ class CRM_Fpptareports_Form_Report_Contribute_Extra extends CRM_Report_Form {
       $lastKey = $rowNum;
     }
   }
+
 }
