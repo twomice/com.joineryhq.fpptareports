@@ -200,6 +200,9 @@ class CRM_Fpptareports_Form_Report_Contribute_Extra extends CRM_Report_Form {
             'card_type_id' => [
               'title' => ts('Credit Card Type'),
             ],
+            'pan_truncation' => [
+              'title' => ts('Credit Card Last-4'),
+            ],
           ],
           'filters' => [
             'card_type_id' => [
