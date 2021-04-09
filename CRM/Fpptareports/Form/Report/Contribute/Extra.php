@@ -607,7 +607,7 @@ class CRM_Fpptareports_Form_Report_Contribute_Extra extends CRM_Report_Form {
 
       // Contribution amount links to viewing contribution
       if ($value = CRM_Utils_Array::value('civicrm_contribution_total_amount', $row)) {
-        $rows[$rowNum]['civicrm_contribution_total_amount'] = CRM_Utils_Money::format($value, $row['civicrm_contribution_currency']);
+        $rows[$rowNum]['civicrm_contribution_total_amount'] = $value;
         if (CRM_Core_Permission::check('access CiviContribute')) {
           $url = CRM_Utils_System::url(
             "civicrm/contact/view/contribution",
