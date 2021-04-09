@@ -97,6 +97,9 @@ class CRM_Fpptareports_Form_Report_Contribute_Extra extends CRM_Report_Form {
             'check_number' => [
               'title' => ts('Check Number'),
             ],
+            'invoice_number' => [
+              'title' => ts('Invoice Number'),
+            ],
             'currency' => [
               'required' => TRUE,
               'no_display' => TRUE,
