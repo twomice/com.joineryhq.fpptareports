@@ -274,6 +274,16 @@ class CRM_Fpptareports_Form_Report_Contribute_Extra extends CRM_Report_Form {
           ],
           'grouping' => 'extra-fields',
         ],
+        'softcredit_contact_org' => [
+          'alias' => 'softcredit_contact_org',
+          'fields' => [
+            'softcredit_org_display_name' => [
+              'title' => ts('Soft credits: related organizations'),
+              'dbAlias' => 'GROUP_CONCAT(DISTINCT softcredit_contact_org_civireport.display_name ORDER BY softcredit_contact_org_civireport.display_name SEPARATOR "<BR>")',
+            ],
+          ],
+          'grouping' => 'extra-fields',
+        ],
         'civicrm_value_participant_d_21' => [
           'alias' => 'participant_details',
           'fields' => [
@@ -366,7 +376,7 @@ class CRM_Fpptareports_Form_Report_Contribute_Extra extends CRM_Report_Form {
           AND NOT {$this->_aliases['contributor_org']}.is_deleted
       ";
     }
-    if ($this->isTableSelected('soft_credit_contact')) {
+    if ($this->isTableSelected('soft_credit_contact') || $this->isTableSelected('softcredit_contact_org')) {
       $this->_from .= "
         LEFT JOIN civicrm_contribution_soft soft
           ON {$this->_aliases['civicrm_contribution']}.id = soft.contribution_id
@@ -400,6 +410,18 @@ class CRM_Fpptareports_Form_Report_Contribute_Extra extends CRM_Report_Form {
             if(otherpart.contact_id = r_attendee_contact_org.contact_id_a, r_attendee_contact_org.contact_id_b, r_attendee_contact_org.contact_id_a)
           AND {$this->_aliases['attendee_contact_org']}.contact_type = 'organization'
           AND NOT {$this->_aliases['attendee_contact_org']}.is_deleted
+      ";
+    }
+    if ($this->isTableSelected('softcredit_contact_org')) {
+      $this->_from .= "
+        LEFT JOIN civicrm_relationship r_softcredit_contact_org
+          ON soft.contact_id IN (r_softcredit_contact_org.contact_id_a, r_softcredit_contact_org.contact_id_b)
+          AND r_softcredit_contact_org.is_active
+        LEFT JOIN civicrm_contact {$this->_aliases['softcredit_contact_org']}
+          ON {$this->_aliases['softcredit_contact_org']}.id =
+            if(soft.contact_id = r_softcredit_contact_org.contact_id_a, r_softcredit_contact_org.contact_id_b, r_softcredit_contact_org.contact_id_a)
+          AND {$this->_aliases['softcredit_contact_org']}.contact_type = 'organization'
+          AND NOT {$this->_aliases['softcredit_contact_org']}.is_deleted
       ";
     }
     if ($this->isTableSelected('civicrm_value_participant_d_21')) {
