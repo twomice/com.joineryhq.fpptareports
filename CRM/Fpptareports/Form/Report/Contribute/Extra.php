@@ -287,6 +287,16 @@ class CRM_Fpptareports_Form_Report_Contribute_Extra extends CRM_Report_Form {
           ],
           'grouping' => 'extra-fields',
         ],
+        'civicrm_line_item' => [
+          'alias' => 'line_item',
+          'fields' => [
+            'line_items' => [
+              'title' => ts('Line Items'),
+              'dbAlias' => 'GROUP_CONCAT(DISTINCT price_field.label, " &ndash; ", line_item_civireport.label ORDER BY line_item_civireport.label SEPARATOR "<BR>")',
+            ],
+          ],
+          'grouping' => 'extra-fields',
+        ],
         'civicrm_value_participant_d_21' => [
           'alias' => 'participant_details',
           'fields' => [
@@ -425,6 +435,14 @@ class CRM_Fpptareports_Form_Report_Contribute_Extra extends CRM_Report_Form {
             if(soft.contact_id = r_softcredit_contact_org.contact_id_a, r_softcredit_contact_org.contact_id_b, r_softcredit_contact_org.contact_id_a)
           AND {$this->_aliases['softcredit_contact_org']}.contact_type = 'organization'
           AND NOT {$this->_aliases['softcredit_contact_org']}.is_deleted
+      ";
+    }
+    if ($this->isTableSelected('civicrm_line_item')) {
+      $this->_from .= "
+        LEFT JOIN civicrm_line_item {$this->_aliases['civicrm_line_item']}
+          ON {$this->_aliases['civicrm_line_item']}.contribution_id = {$this->_aliases['civicrm_contribution']}.id
+        LEFT JOIN civicrm_price_field price_field
+          ON price_field.id = {$this->_aliases['civicrm_line_item']}.price_field_id
       ";
     }
     if ($this->isTableSelected('civicrm_value_participant_d_21')) {
