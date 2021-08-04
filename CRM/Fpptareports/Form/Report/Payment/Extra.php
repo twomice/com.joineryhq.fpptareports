@@ -108,9 +108,26 @@ class CRM_Fpptareports_Form_Report_Payment_Extra extends CRM_Report_Form {
             'trxn_id' => NULL,
             'receive_date' => [
               'title' => ts('Contrib: Date Received'),
+              // Change format of this field to text, because:
+              // a) it's a date or date/time field
+              // b) we're cutomizing the date/time format in alterDisplay()
+              // c) if it retains a Date or DateTime type, the template will force its own format, undoing our formatting.
+              'type' => CRM_Utils_Type::T_STRING,
             ],
-            'receipt_date' => NULL,
-            'thankyou_date' => NULL,
+            'receipt_date' => [
+              // Change format of this field to text, because:
+              // a) it's a date or date/time field
+              // b) we're cutomizing the date/time format in alterDisplay()
+              // c) if it retains a Date or DateTime type, the template will force its own format, undoing our formatting.
+              'type' => CRM_Utils_Type::T_STRING,
+            ],
+            'thankyou_date' => [
+              // Change format of this field to text, because:
+              // a) it's a date or date/time field
+              // b) we're cutomizing the date/time format in alterDisplay()
+              // c) if it retains a Date or DateTime type, the template will force its own format, undoing our formatting.
+              'type' => CRM_Utils_Type::T_STRING,
+            ],
             'total_amount' => [
               'title' => ts('Contrib: Amount'),
             ],
@@ -122,6 +139,11 @@ class CRM_Fpptareports_Form_Report_Payment_Extra extends CRM_Report_Form {
             'cancel_date' => [
               'title' => ts('Contrib: Cancelled / Refunded Date'),
               'name' => 'contribution_cancel_date',
+              // Change format of this field to text, because:
+              // a) it's a date or date/time field
+              // b) we're cutomizing the date/time format in alterDisplay()
+              // c) if it retains a Date or DateTime type, the template will force its own format, undoing our formatting.
+              'type' => CRM_Utils_Type::T_STRING,
             ],
             'cancel_reason' => [
               'title' => ts('Contrib: Cancellation / Refund Reason'),
@@ -225,6 +247,11 @@ class CRM_Fpptareports_Form_Report_Payment_Extra extends CRM_Report_Form {
             'trxn_date' => [
               'title' => ts('Payment: Received Date'),
               'default' => TRUE,
+              // Change format of this field to text, because:
+              // a) it's a date or date/time field
+              // b) we're cutomizing the date/time format in alterDisplay()
+              // c) if it retains a Date or DateTime type, the template will force its own format, undoing our formatting.
+              'type' => CRM_Utils_Type::T_STRING,
             ],
             'trxn_id' => [
               'name' => 'id',
@@ -355,6 +382,13 @@ class CRM_Fpptareports_Form_Report_Payment_Extra extends CRM_Report_Form {
       ]
 
     );
+
+    // Change format of this field to text, because:
+    // a) it's a date or date/time field
+    // b) we're cutomizing the date/time format in alterDisplay()
+    // c) if it retains a Date or DateTime type, the template will force its own format, undoing our formatting.
+    $this->_columns['civicrm_contact']['fields']['birth_date']['type'] = CRM_Utils_Type::T_STRING;
+
     // The tests test for this variation of the sort_name field. Don't argue with the tests :-).
     $this->_groupFilter = TRUE;
     $this->_tagFilter = TRUE;
@@ -499,9 +533,9 @@ class CRM_Fpptareports_Form_Report_Payment_Extra extends CRM_Report_Form {
 
   /**
    * TODO: This method was copied from CRM_Fpptareports_Form_Report_Contribute_Extra but
-   * probably needs review and modification to make sense in this report. 
+   * probably needs review and modification to make sense in this report.
    * Therefore we're commenting it out.
-   * 
+   *
    * @param $rows
    *
    * @return array
@@ -596,6 +630,10 @@ class CRM_Fpptareports_Form_Report_Payment_Extra extends CRM_Report_Form {
     // We pass in TRUE as 2nd param so that even disabled contribution page titles are returned and replaced in the report
     $contributionPages = CRM_Contribute_PseudoConstant::contributionPage(NULL, TRUE);
     $batches = CRM_Batch_BAO_Batch::getBatches();
+
+    $formatStringDateTime = Civi::Settings()->get('dateformatshortdate') . ' ' . Civi::Settings()->get('dateformatTime');
+    $formatStringDate = Civi::Settings()->get('dateformatshortdate');
+
     foreach ($rows as $rowNum => $row) {
       if (!empty($this->_noRepeats) && $this->_outputMode != 'csv') {
         // don't repeat contact details if its same as the previous row
@@ -668,10 +706,6 @@ class CRM_Fpptareports_Form_Report_Payment_Extra extends CRM_Report_Form {
         $rows[$rowNum]['civicrm_financial_trxn_card_type_id'] = $this->getLabels($row['civicrm_financial_trxn_card_type_id'], 'CRM_Financial_DAO_FinancialTrxn', 'card_type_id');
         $entryFound = TRUE;
       }
-      if (!empty($row['civicrm_financial_trxn_trxn_date'])) {
-        $rows[$rowNum]['civicrm_financial_trxn_trxn_date'] = CRM_Utils_Date::customFormat($rows[$rowNum]['civicrm_financial_trxn_trxn_date'], Civi::Settings()->get('dateformatDatetime'));
-        $entryFound = TRUE;
-      }
 
       // Contribution amount links to viewing contribution
       if (CRM_Utils_Array::value('civicrm_contribution_list_contri_id', $row)) {
@@ -725,6 +759,24 @@ class CRM_Fpptareports_Form_Report_Payment_Extra extends CRM_Report_Form {
       }
 
       $entryFound = $this->alterDisplayAddressFields($row, $rows, $rowNum, 'contribute/detail', 'List all contribs(s) for this ') ? TRUE : $entryFound;
+
+      if (array_key_exists('civicrm_contact_birth_date', $row)) {
+        $entryFound = TRUE;
+        $rows[$rowNum]['civicrm_contact_birth_date'] = CRM_Utils_Date::customFormat($rows[$rowNum]['civicrm_contact_birth_date'], $formatStringDate);
+      }
+      $dateTimeColumnNames = [
+        'civicrm_contribution_cancel_date',
+        'civicrm_contribution_receipt_date',
+        'civicrm_contribution_receive_date',
+        'civicrm_contribution_thankyou_date',
+        'civicrm_financial_trxn_trxn_date',
+      ];
+      foreach ($dateTimeColumnNames as $dateTimeColumnName) {
+        if (array_key_exists($dateTimeColumnName, $row)) {
+          $entryFound = TRUE;
+          $rows[$rowNum][$dateTimeColumnName] = CRM_Utils_Date::customFormat($rows[$rowNum][$dateTimeColumnName], $formatStringDateTime);
+        }
+      }
 
       // skip looking further in rows, if first row itself doesn't
       // have the column we need
