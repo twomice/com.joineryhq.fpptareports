@@ -690,12 +690,20 @@ class CRM_Fpptareports_Form_Report_Payment_Extra extends CRM_Report_Form {
         $rows[$rowNum]['civicrm_contribution_contribution_status_id'] = $contributionStatus[$value];
         $entryFound = TRUE;
       }
+      if ($value = CRM_Utils_Array::value('civicrm_financial_trxn_trxn_status_id', $row)) {
+        $rows[$rowNum]['civicrm_financial_trxn_trxn_status_id'] = $contributionStatus[$value];
+        $entryFound = TRUE;
+      }
       if ($value = CRM_Utils_Array::value('civicrm_contribution_contribution_page_id', $row)) {
         $rows[$rowNum]['civicrm_contribution_contribution_page_id'] = $contributionPages[$value];
         $entryFound = TRUE;
       }
       if ($value = CRM_Utils_Array::value('civicrm_contribution_payment_instrument_id', $row)) {
         $rows[$rowNum]['civicrm_contribution_payment_instrument_id'] = $paymentInstruments[$value];
+        $entryFound = TRUE;
+      }
+      if ($value = CRM_Utils_Array::value('civicrm_financial_trxn_trxn_payment_instrument_id', $row)) {
+        $rows[$rowNum]['civicrm_financial_trxn_trxn_payment_instrument_id'] = $paymentInstruments[$value];
         $entryFound = TRUE;
       }
       if (!empty($row['civicrm_batch_batch_id'])) {
