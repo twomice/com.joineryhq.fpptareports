@@ -367,6 +367,10 @@ class CRM_Fpptareports_Form_Report_Payment_Extra extends CRM_Report_Form {
               'title' => ts('Line Items'),
               'dbAlias' => 'GROUP_CONCAT(DISTINCT price_field.label, " &ndash; ", line_item_civireport.label ORDER BY line_item_civireport.label SEPARATOR "<BR>")',
             ],
+            'line_item_financial_types' => [
+              'title' => ts('Line Items: Financial Types'),
+              'dbAlias' => 'GROUP_CONCAT(DISTINCT line_item_civireport.financial_type_id ORDER BY line_item_civireport.financial_type_id SEPARATOR ",")',
+            ],
           ],
           'grouping' => 'extra-fields',
         ],
@@ -684,6 +688,12 @@ class CRM_Fpptareports_Form_Report_Payment_Extra extends CRM_Report_Form {
 
       if ($value = CRM_Utils_Array::value('civicrm_contribution_financial_type_id', $row)) {
         $rows[$rowNum]['civicrm_contribution_financial_type_id'] = $contributionTypes[$value];
+        $entryFound = TRUE;
+      }
+      if ($value = CRM_Utils_Array::value('civicrm_line_item_line_item_financial_types', $row)) {
+        $ftIds = array_flip(explode(',', $value));
+        $ftLabels = array_intersect_key($contributionTypes, $ftIds);
+        $rows[$rowNum]['civicrm_line_item_line_item_financial_types'] = implode('<br>', $ftLabels);
         $entryFound = TRUE;
       }
       if ($value = CRM_Utils_Array::value('civicrm_contribution_contribution_status_id', $row)) {
