@@ -374,6 +374,23 @@ class CRM_Fpptareports_Form_Report_Payment_Extra extends CRM_Report_Form {
           ],
           'grouping' => 'extra-fields',
         ],
+        // Separate line_item table for filters -- this table will be INNER JOINed to limit the contributions
+        // that appear in rows, while the 'civicrm_line_item' table will be LEFT JOINed to include all line
+        // items on each of those contribution rows.
+        'li' => [
+          'dao' => 'CRM_Price_DAO_LineItem',
+          'alias' => 'li',
+          'filters' => [
+            'line_item_financial_type_id' => [
+              'name' => 'financial_type_id',
+              'title' => ts('Line Items: Financial Types'),
+              'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+              'options' => CRM_Financial_BAO_FinancialType::getAvailableFinancialTypes(),
+              'type' => CRM_Utils_Type::T_INT,
+            ],
+          ],
+          'grouping' => 'line-item-fields',
+        ],
         'civicrm_value_participant_d_21' => [
           'alias' => 'participant_details',
           'fields' => [
@@ -523,6 +540,15 @@ class CRM_Fpptareports_Form_Report_Payment_Extra extends CRM_Report_Form {
           ON {$this->_aliases['civicrm_line_item']}.contribution_id = {$this->_aliases['civicrm_contribution']}.id
         LEFT JOIN civicrm_price_field price_field
           ON price_field.id = {$this->_aliases['civicrm_line_item']}.price_field_id
+      ";
+    }
+    if ($this->isTableSelected('li')) {
+      // Separate line_item table for filters -- this table will be INNER JOINed to limit the contributions
+      // that appear in rows, while the 'civicrm_line_item' table will be LEFT JOINed to include all line
+      // items on each of those contribution rows.
+      $this->_from .= "
+        INNER JOIN civicrm_line_item {$this->_aliases['li']}
+          ON {$this->_aliases['civicrm_line_item']}.contribution_id = {$this->_aliases['civicrm_contribution']}.id
       ";
     }
     if ($this->isTableSelected('civicrm_value_participant_d_21')) {
