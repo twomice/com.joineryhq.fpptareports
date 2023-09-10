@@ -253,7 +253,7 @@ class CRM_Fpptareports_Form_Report_Payment_Extra extends CRM_Report_Form {
               // c) if it retains a Date or DateTime type, the template will force its own format, undoing our formatting.
               'type' => CRM_Utils_Type::T_STRING,
             ],
-            'trxn_id' => [
+            'financial_trxn_id' => [
               'name' => 'id',
               'title' => ts('Payment: ID'),
             ],
