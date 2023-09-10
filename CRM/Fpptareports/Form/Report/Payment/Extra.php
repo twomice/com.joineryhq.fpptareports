@@ -548,7 +548,7 @@ class CRM_Fpptareports_Form_Report_Payment_Extra extends CRM_Report_Form {
       // items on each of those contribution rows.
       $this->_from .= "
         INNER JOIN civicrm_line_item {$this->_aliases['li']}
-          ON {$this->_aliases['civicrm_line_item']}.contribution_id = {$this->_aliases['civicrm_contribution']}.id
+          ON {$this->_aliases['li']}.contribution_id = {$this->_aliases['civicrm_contribution']}.id
       ";
     }
     if ($this->isTableSelected('civicrm_value_participant_d_21')) {
