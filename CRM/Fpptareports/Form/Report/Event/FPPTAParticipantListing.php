@@ -103,23 +103,6 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
         ],
         'filters' => CRM_Report_Form::getBasicContactFilters(),
       ],
-      'civicrm_group_contact' => [
-        'fields' => [
-          'is_group_vendors' => [
-            'title' => E::ts('Is FPPTA Service Vendor?'),
-            'dbAlias' => 'if(group_contact_civireport.group_id in (' . $groupIdPerName['servicevendor'] . '), "Vendor", "")',
-          ],
-          'is_group_board' => [
-            'title' => E::ts('Is FPPTA Board Member?'),
-            'dbAlias' => 'if(group_contact_civireport.group_id in (' . $groupIdPerName['boardmember'] . '), "Board", "")',
-          ],
-          'is_group_ed' => [
-            'title' => E::ts('Is FPPTA Education Commitee?'),
-            'dbAlias' => 'if(group_contact_civireport.group_id in (' . $groupIdPerName['educationcomm'] . '), "Education", "")',
-          ],
-        ],
-        'grouping' => 'fppta-group-fields',
-      ],
       'civicrm_email' => [
         'dao' => 'CRM_Core_DAO_Email',
         'fields' => [
@@ -427,6 +410,23 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
             'dbAlias' => 'group_concat(ft_civireport.pan_truncation ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
           ],
         ],
+      ],
+      'civicrm_group_contact' => [
+        'fields' => [
+          'is_group_vendors' => [
+            'title' => E::ts('Is FPPTA Service Vendor?'),
+            'dbAlias' => 'if(group_contact_civireport.group_id in (' . $groupIdPerName['servicevendor'] . '), "Vendor", "")',
+          ],
+          'is_group_board' => [
+            'title' => E::ts('Is FPPTA Board Member?'),
+            'dbAlias' => 'if(group_contact_civireport.group_id in (' . $groupIdPerName['boardmember'] . '), "Board", "")',
+          ],
+          'is_group_ed' => [
+            'title' => E::ts('Is FPPTA Education Commitee?'),
+            'dbAlias' => 'if(group_contact_civireport.group_id in (' . $groupIdPerName['educationcomm'] . '), "Education", "")',
+          ],
+        ],
+        'grouping' => 'fppta-group-fields',
       ],
       'civicrm_membership' => [
         'dao' => 'CRM_Member_DAO_Membership',
