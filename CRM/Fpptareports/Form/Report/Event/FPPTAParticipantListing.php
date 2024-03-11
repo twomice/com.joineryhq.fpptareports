@@ -39,6 +39,14 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
    * Class constructor.
    */
   public function __construct() {
+    $roleOptionIdPerName = $this->_getParticipantRoleOptionIdPerName();
+    // Group names contain the id, so we might as well hard-code.
+    $groupIdPerName = [
+      'boardmember' => 86,
+      'educationcomm' => 85,
+      'servicevendor' => 87,
+    ];
+
     $this->_autoIncludeIndexedFieldsAsOrderBys = 1;
 
     $this->_columns = [
@@ -94,6 +102,23 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
           ],
         ],
         'filters' => CRM_Report_Form::getBasicContactFilters(),
+      ],
+      'civicrm_group_contact' => [
+        'fields' => [
+          'is_group_vendors' => [
+            'title' => E::ts('Is FPPTA Service Vendor?'),
+            'dbAlias' => 'if(group_contact_civireport.group_id in (' . $groupIdPerName['servicevendor'] . '), "Vendor", "")',
+          ],
+          'is_group_board' => [
+            'title' => E::ts('Is FPPTA Board Member?'),
+            'dbAlias' => 'if(group_contact_civireport.group_id in (' . $groupIdPerName['boardmember'] . '), "Board", "")',
+          ],
+          'is_group_ed' => [
+            'title' => E::ts('Is FPPTA Education Commitee?'),
+            'dbAlias' => 'if(group_contact_civireport.group_id in (' . $groupIdPerName['educationcomm'] . '), "Education", "")',
+          ],
+        ],
+        'grouping' => 'fppta-group-fields',
       ],
       'civicrm_email' => [
         'dao' => 'CRM_Core_DAO_Email',
@@ -162,6 +187,23 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
             'dbAlias' => 'participant_civireport.fee_amount - IFNULL(SUM(ft_civireport.total_amount), 0)',
             'type' => 1024,
           ],
+          'is_speaker' => [
+            'title' => E::ts('Is speaker?'),
+            'dbAlias' => "IF(participant_civireport.role_id in ({$roleOptionIdPerName['Speaker']}), 'Speaker', '')",
+          ],
+          'is_moderator' => [
+            'title' => E::ts('Is moderator?'),
+            'dbAlias' => "IF(participant_civireport.role_id in ({$roleOptionIdPerName['Moderator']}), 'Moderator', '')",
+          ],
+          'is_volunteer' => [
+            'title' => E::ts('Is volunteer?'),
+            'dbAlias' => "IF(participant_civireport.role_id in ({$roleOptionIdPerName['Volunteer']}), 'Volunteer', '')",
+          ],
+          'is_staff' => [
+            'title' => E::ts('Is staff?'),
+            'dbAlias' => "IF(participant_civireport.role_id in ({$roleOptionIdPerName['Staff']}), 'Staff', '')",
+          ],
+
         ],
         'grouping' => 'event-fields',
         'filters' => [
@@ -386,6 +428,48 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
           ],
         ],
       ],
+      'civicrm_membership' => [
+        'dao' => 'CRM_Member_DAO_Membership',
+        'fields' => [
+          'is_member_assoc' => [
+            'title' => E::ts('Is Member: Associate?'),
+            'dbAlias' => 'if(civicrm_membership_status.id IS NOT NULL AND membership_civireport.membership_type_id IN (1), "Associate", "")',
+          ],
+          'is_member_pensionboard' => [
+            'title' => E::ts('Is Member: Pension Board?'),
+            'dbAlias' => 'if(civicrm_membership_status.id IS NOT NULL AND membership_civireport.membership_type_id IN (2), "Pension Board", "")',
+          ],
+        ],
+        'grouping' => 'fppta-member-fields',
+      ],
+      'civicrm_line_item_booth' => [
+        'dao' => 'CRM_Price_DAO_LineItem',
+        'fields' => [
+          'is_booth' => [
+            'title' => E::ts('Requested exhibitor booth?'),
+            'dbAlias' => 'if(line_item_booth_civireport.id IS NOT NULL, "Booth", "")',
+          ],
+        ],
+        'grouping' => 'fppta-booth-fields',
+      ],
+      'event_sponsor_registering_for' => [
+        'fields' => [
+          'sponsorship_level_regfor' => [
+            'title' => E::ts("'Registering for' Sponsorship Level"),
+            'dbAlias' => 'if(regforspons.sponsorship_for_event_192, if(regforspons.sponsorship_level_193 > "", regforspons.sponsorship_level_193, -1), "")',
+          ],
+        ],
+        'grouping' => 'fppta-sponsor-fields',
+      ],
+      'event_sponsor_employee' => [
+        'fields' => [
+          'sponsorship_level_empl' => [
+            'title' => E::ts('Employer Sponsorship Level'),
+            'dbAlias' => 'if(emplspons.sponsorship_for_event_192, if(emplspons.sponsorship_level_193 > "", emplspons.sponsorship_level_193, -1), "")',
+          ],
+        ],
+        'grouping' => 'fppta-sponsor-fields',
+      ],
     ];
 
     $this->_options = [
@@ -528,6 +612,22 @@ ORDER BY  cv.label
                    ON ( {$this->_aliases['civicrm_note']}.entity_table = 'civicrm_participant' AND
                    {$this->_aliases['civicrm_participant']}.id = {$this->_aliases['civicrm_note']}.entity_id )";
     }
+    if ($this->isTableSelected('civicrm_group_contact')) {
+      $this->_from .= "
+            LEFT JOIN civicrm_group_contact {$this->_aliases['civicrm_group_contact']}
+                  ON {$this->_aliases['civicrm_group_contact']}.contact_id = {$this->_aliases['civicrm_participant']}.contact_id
+                     AND {$this->_aliases['civicrm_group_contact']}.status = 'added'
+      ";
+    }
+    if ($this->isTableSelected('civicrm_membership')) {
+      $this->_from .= "
+            LEFT JOIN civicrm_membership {$this->_aliases['civicrm_membership']}
+                  ON {$this->_aliases['civicrm_membership']}.contact_id = {$this->_aliases['civicrm_participant']}.contact_id
+            LEFT JOIN civicrm_membership_status
+                  ON civicrm_membership_status.id = {$this->_aliases['civicrm_membership']}.status_id
+                     AND civicrm_membership_status.is_current_member
+      ";
+    }
 
     if ($this->_contribField) {
       $this->_from .= "
@@ -548,6 +648,40 @@ ORDER BY  cv.label
                   ON line_item_civireport.entity_table = 'civicrm_participant' AND
                      line_item_civireport.entity_id = {$this->_aliases['civicrm_participant']}.id AND
                      line_item_civireport.qty > 0
+      ";
+    }
+    if ($this->isTableSelected('civicrm_line_item_booth')) {
+      $this->_from .= "
+            LEFT JOIN civicrm_value_event_metadat_35 emeta
+                  ON emeta.entity_id = {$this->_aliases['civicrm_participant']}.event_id
+            LEFT JOIN civicrm_line_item {$this->_aliases['civicrm_line_item_booth']}
+                  ON {$this->_aliases['civicrm_line_item_booth']}.entity_table = 'civicrm_participant' AND
+                     {$this->_aliases['civicrm_line_item_booth']}.entity_id = {$this->_aliases['civicrm_participant']}.id AND
+                     {$this->_aliases['civicrm_line_item_booth']}.qty > 0 AND
+                     {$this->_aliases['civicrm_line_item_booth']}.price_field_id = emeta.booth_selection_price_field_194
+
+      ";
+    }
+    if ($this->isTableSelected('event_sponsor_registering_for')) {
+      $this->_from .= "
+        LEFT JOIN civicrm_value_participant_d_21 pdet
+          ON pdet.entity_id = {$this->_aliases['civicrm_participant']}.id
+        LEFT JOIN civicrm_contribution regforcontrib
+          ON regforcontrib.contact_id = pdet.registering_for_organization_lis_179
+            AND regforcontrib.contribution_status_id = 1
+        LEFT JOIN civicrm_value_event_sponsor_34 regforspons
+          ON regforspons.entity_id = regforcontrib.id
+            AND regforspons.sponsorship_for_event_192 = {$this->_aliases['civicrm_participant']}.event_id
+      ";
+    }
+    if ($this->isTableSelected('event_sponsor_employee')) {
+      $this->_from .= "
+        LEFT JOIN civicrm_contribution emplcontrib
+          ON emplcontrib.contact_id = {$this->_aliases['civicrm_contact']}.employer_id
+            AND emplcontrib.contribution_status_id = 1
+        LEFT JOIN civicrm_value_event_sponsor_34 emplspons
+          ON emplspons.entity_id = emplcontrib.id
+            AND emplspons.sponsorship_for_event_192 = {$this->_aliases['civicrm_participant']}.event_id
       ";
     }
   }
@@ -654,6 +788,26 @@ ORDER BY  cv.label
           $rows[$rowNum]['civicrm_participant_registered_by_name_link'] = CRM_Utils_System::url('civicrm/contact/view', 'reset=1&cid=' . $registeredByContactId, $this->_absoluteUrl);
           $rows[$rowNum]['civicrm_participant_registered_by_name_hover'] = E::ts('View Contact Summary for Contact that registered the participant.');
         }
+      }
+
+      // Handle regfor-sponsor-level
+      if (array_key_exists('event_sponsor_registering_for_sponsorship_level_regfor', $row)) {
+        $sponsorshipLevelOptions = $this->_getSponsorshipLevelOptions();
+        $sponsorLevel = $row['event_sponsor_registering_for_sponsorship_level_regfor'];
+        if ($sponsorshipLevelOptions[$sponsorLevel]) {
+          $rows[$rowNum]['event_sponsor_registering_for_sponsorship_level_regfor'] = $sponsorshipLevelOptions[$sponsorLevel];
+        }
+        $entryFound = TRUE;
+      }
+
+      // Handle employer-sponsor-level
+      if (array_key_exists('event_sponsor_employee_sponsorship_level_empl', $row)) {
+        $sponsorshipLevelOptions = $this->_getSponsorshipLevelOptions();
+        $sponsorLevel = $row['event_sponsor_employee_sponsorship_level_empl'];
+        if ($sponsorshipLevelOptions[$sponsorLevel]) {
+          $rows[$rowNum]['event_sponsor_employee_sponsorship_level_empl'] = $sponsorshipLevelOptions[$sponsorLevel];
+        }
+        $entryFound = TRUE;
       }
 
       // Handle value seperator in Fee Level
@@ -768,6 +922,38 @@ ORDER BY  cv.label
         break;
       }
     }
+  }
+
+  /**
+   * Get a list of participant roleIds, keyed to their system name.
+   * @return Array
+   */
+  public function _getParticipantRoleOptionIdPerName() {
+    $optionValues = \Civi\Api4\OptionValue::get(TRUE)
+      ->addWhere('option_group_id:name', '=', 'participant_role')
+      ->setLimit(0)
+      ->execute()
+      ->getArrayCopy();
+    $optionValues = CRM_Utils_Array::rekey($optionValues, 'value');
+    $ret = array_flip(CRM_Utils_Array::collect('name', $optionValues));
+    return $ret;
+  }
+
+  /**
+   * Get a list of option labels for the "sponsorship level" custom field,
+   * keyed to their values (also special value -1='unknown').
+   *
+   * @staticvar type $ret
+   * @return type
+   */
+  public function _getSponsorshipLevelOptions() {
+    // Static cache, because this can be called mulitple times per result row.
+    static $ret;
+    if (!isset($ret)) {
+      $ret = CRM_Contribute_DAO_Contribution::buildOptions('custom_193');
+      $ret['-1'] = E::ts('(Unspecified level)');
+    }
+    return $ret;
   }
 
 }
