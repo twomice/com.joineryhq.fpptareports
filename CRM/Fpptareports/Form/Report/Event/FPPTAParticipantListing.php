@@ -552,67 +552,6 @@ ORDER BY  cv.label
     }
   }
 
-  public function where() {
-    $clauses = [];
-    foreach ($this->_columns as $tableName => $table) {
-      if (array_key_exists('filters', $table)) {
-        foreach ($table['filters'] as $fieldName => $field) {
-          $clause = NULL;
-
-          if (CRM_Utils_Array::value('type', $field) & CRM_Utils_Type::T_DATE) {
-            $relative = CRM_Utils_Array::value("{$fieldName}_relative", $this->_params);
-            $from = CRM_Utils_Array::value("{$fieldName}_from", $this->_params);
-            $to = CRM_Utils_Array::value("{$fieldName}_to", $this->_params);
-
-            if ($relative || $from || $to) {
-              $clause = $this->dateClause($field['name'], $relative, $from, $to, $field['type']);
-            }
-          }
-          else {
-            $op = CRM_Utils_Array::value("{$fieldName}_op", $this->_params);
-
-            if ($fieldName == 'rid') {
-              $value = CRM_Utils_Array::value("{$fieldName}_value", $this->_params);
-              if (!empty($value)) {
-                $operator = '';
-                if ($op == 'notin') {
-                  $operator = 'NOT';
-                }
-
-                $regexp = "[[:cntrl:]]*" . implode('[[:>:]]*|[[:<:]]*', $value) . "[[:cntrl:]]*";
-                $clause = "{$field['dbAlias']} {$operator} REGEXP '{$regexp}'";
-              }
-              $op = NULL;
-            }
-
-            if ($op) {
-              $clause = $this->whereClause($field,
-                $op,
-                CRM_Utils_Array::value("{$fieldName}_value", $this->_params),
-                CRM_Utils_Array::value("{$fieldName}_min", $this->_params),
-                CRM_Utils_Array::value("{$fieldName}_max", $this->_params)
-              );
-            }
-          }
-
-          if (!empty($clause)) {
-            $clauses[] = $clause;
-          }
-        }
-      }
-    }
-    if (empty($clauses)) {
-      $this->_where = "WHERE {$this->_aliases['civicrm_participant']}.is_test = 0 ";
-    }
-    else {
-      $this->_where = "WHERE {$this->_aliases['civicrm_participant']}.is_test = 0 AND " .
-        implode(' AND ', $clauses);
-    }
-    if ($this->_aclWhere) {
-      $this->_where .= " AND {$this->_aclWhere} ";
-    }
-  }
-
   public function groupBy() {
     $this->_groupBy = CRM_Contact_BAO_Query::getGroupByFromSelectColumns($this->_selectClauses, "{$this->_aliases['civicrm_participant']}.id");
   }
