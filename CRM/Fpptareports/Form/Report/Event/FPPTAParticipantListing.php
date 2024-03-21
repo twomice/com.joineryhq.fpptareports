@@ -45,6 +45,9 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
       'boardmember' => 86,
       'educationcomm' => 85,
       'servicevendor' => 87,
+      'volunteer' => 89,
+      'moderator' => 90,
+      'staff' => 91,
     ];
 
     $this->_autoIncludeIndexedFieldsAsOrderBys = 1;
@@ -174,19 +177,6 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
             'title' => E::ts('Is speaker?'),
             'dbAlias' => "IF(participant_civireport.role_id in ({$roleOptionIdPerName['Speaker']}), 'Speaker', '')",
           ],
-          'is_moderator' => [
-            'title' => E::ts('Is moderator?'),
-            'dbAlias' => "IF(participant_civireport.role_id in ({$roleOptionIdPerName['Moderator']}), 'Moderator', '')",
-          ],
-          'is_volunteer' => [
-            'title' => E::ts('Is volunteer?'),
-            'dbAlias' => "IF(participant_civireport.role_id in ({$roleOptionIdPerName['Volunteer']}), 'Volunteer', '')",
-          ],
-          'is_staff' => [
-            'title' => E::ts('Is staff?'),
-            'dbAlias' => "IF(participant_civireport.role_id in ({$roleOptionIdPerName['Staff']}), 'Staff', '')",
-          ],
-
         ],
         'grouping' => 'event-fields',
         'filters' => [
@@ -424,6 +414,18 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
           'is_group_ed' => [
             'title' => E::ts('Is FPPTA Education Commitee?'),
             'dbAlias' => 'if(group_contact_civireport.group_id in (' . $groupIdPerName['educationcomm'] . '), "Education", "")',
+          ],
+          'is_group_moderator' => [
+            'title' => E::ts('Is Moderator?'),
+            'dbAlias' => 'if(group_contact_civireport.group_id in (' . $groupIdPerName['moderator'] . '), "Moderator", "")',
+          ],
+          'is_group_volunteer' => [
+            'title' => E::ts('Is Volunteer?'),
+            'dbAlias' => 'if(group_contact_civireport.group_id in (' . $groupIdPerName['volunteer'] . '), "Volunteer", "")',
+          ],
+          'is_group_staff' => [
+            'title' => E::ts('Is Staff?'),
+            'dbAlias' => 'if(group_contact_civireport.group_id in (' . $groupIdPerName['staff'] . '), "Staff", "")',
           ],
         ],
         'grouping' => 'fppta-group-fields',
