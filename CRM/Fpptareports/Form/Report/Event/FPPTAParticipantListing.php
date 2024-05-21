@@ -157,8 +157,9 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
             'title' => E::ts('Registered by Participant Name'),
             'name' => 'registered_by_id',
           ],
-          'source' => [
-            'title' => E::ts('Source'),
+          'p_source' => [
+            'name' => 'source',
+            'title' => E::ts('Participant: Source'),
           ],
           'participant_fee_level' => NULL,
           'participant_fee_amount' => ['title' => E::ts('Participant Fee')],
@@ -220,7 +221,7 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
             'operator' => 'like',
           ],
           'source' => [
-            'title' => E::ts('Source'),
+            'title' => E::ts('Participant Source'),
             'type' => CRM_Utils_Type::T_STRING,
             'operator' => 'like',
           ],
@@ -313,7 +314,11 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
           'financial_type_id' => ['title' => E::ts('Financial Type')],
           'receive_date' => ['title' => E::ts('Contribution Date')],
           'contribution_status_id' => ['title' => E::ts('Contribution Status')],
-          'payment_instrument_id' => ['title' => E::ts('Contribution Payment Type')],
+          'ctrb_payment_instrument_id' => [
+            'name' => 'payment_instrument_id',
+            'title' => E::ts('Contrib: Payment Method'),
+            'type' => CRM_Utils_Type::T_STRING,
+          ],
           'contribution_source' => [
             'name' => 'source',
             'title' => E::ts('Contribution Source'),
@@ -375,8 +380,9 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
             'title' => E::ts('Payment Date'),
             'dbAlias' => 'group_concat(ft_civireport.trxn_date ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
           ],
-          'payment_instrument_id' => [
-            'title' => E::ts('Payment Method'),
+          'trxn_payment_instrument_id' => [
+            'name' => 'payment_instrument_id',
+            'title' => E::ts('Payment: Payment Method'),
             'dbAlias' => 'group_concat(ft_civireport.payment_instrument_id ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
           ],
           'check_number' => [
@@ -834,13 +840,22 @@ ORDER BY  cv.label
       }
 
       // Handle comma-separated payment methods
-      if (array_key_exists('civicrm_financial_trxn_payment_instrument_id', $row)) {
+      if (array_key_exists('civicrm_financial_trxn_trxn_payment_instrument_id', $row)) {
         $values = [];
-        $paymentInstrumentIds = explode(CRM_Core_DAO::VALUE_SEPARATOR, $row['civicrm_financial_trxn_payment_instrument_id']);
+        $paymentInstrumentIds = explode(CRM_Core_DAO::VALUE_SEPARATOR, $row['civicrm_financial_trxn_trxn_payment_instrument_id']);
         foreach ($paymentInstrumentIds as $paymentInstrumentId) {
           $values[] = CRM_Utils_Array::value($paymentInstrumentId, $paymentInstruments);
         }
-        $rows[$rowNum]['civicrm_financial_trxn_payment_instrument_id'] = implode($multiSeparator, $values);
+        $rows[$rowNum]['civicrm_financial_trxn_trxn_payment_instrument_id'] = implode($multiSeparator, $values);
+        $entryFound = TRUE;
+      }
+      if (array_key_exists('civicrm_contribution_ctrb_payment_instrument_id', $row)) {
+        $values = [];
+        $paymentInstrumentIds = explode(CRM_Core_DAO::VALUE_SEPARATOR, $row['civicrm_contribution_ctrb_payment_instrument_id']);
+        foreach ($paymentInstrumentIds as $paymentInstrumentId) {
+          $values[] = CRM_Utils_Array::value($paymentInstrumentId, $paymentInstruments);
+        }
+        $rows[$rowNum]['civicrm_contribution_ctrb_payment_instrument_id'] = implode($multiSeparator, $values);
         $entryFound = TRUE;
       }
 
