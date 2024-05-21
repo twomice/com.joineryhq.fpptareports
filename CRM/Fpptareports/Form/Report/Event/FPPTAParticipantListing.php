@@ -460,20 +460,21 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
         ],
         'grouping' => 'fppta-booth-fields',
       ],
-      'event_sponsor_registering_for' => [
-        'fields' => [
-          'sponsorship_level_regfor' => [
-            'title' => E::ts("'Registering for' Sponsorship Level"),
-            'dbAlias' => 'if(regforspons.sponsorship_for_event_192, if(regforspons.sponsorship_level_193 > "", regforspons.sponsorship_level_193, -1), "")',
-          ],
-        ],
-        'grouping' => 'fppta-sponsor-fields',
-      ],
+
       'event_sponsor_employee' => [
         'fields' => [
           'sponsorship_level_empl' => [
             'title' => E::ts('Employer Sponsorship Level'),
-            'dbAlias' => 'if(emplspons.sponsorship_for_event_192, if(emplspons.sponsorship_level_193 > "", emplspons.sponsorship_level_193, -1), "")',
+            'dbAlias' => 'group_concat(distinct emplspons.level)',
+          ],
+        ],
+        'grouping' => 'fppta-sponsor-fields',
+      ],
+      'event_sponsor_registering_for' => [
+        'fields' => [
+          'sponsorship_level_regfor' => [
+            'title' => E::ts("'Registering for' Sponsorship Level"),
+            'dbAlias' => 'group_concat(distinct regforspons.level)',
           ],
         ],
         'grouping' => 'fppta-sponsor-fields',
@@ -674,22 +675,38 @@ ORDER BY  cv.label
       $this->_from .= "
         LEFT JOIN civicrm_value_participant_d_21 pdet
           ON pdet.entity_id = {$this->_aliases['civicrm_participant']}.id
-        LEFT JOIN civicrm_contribution regforcontrib
-          ON regforcontrib.contact_id = pdet.registering_for_organization_lis_179
-            AND regforcontrib.contribution_status_id = 1
-        LEFT JOIN civicrm_value_event_sponsor_34 regforspons
-          ON regforspons.entity_id = regforcontrib.id
-            AND regforspons.sponsorship_for_event_192 = {$this->_aliases['civicrm_participant']}.event_id
+        LEFT JOIN (
+          SELECT
+            ctrb.contact_id,
+            spons.sponsorship_for_event_192 as event_id,
+            spons.sponsorship_level_193 as level
+          FROM
+            `civicrm_value_event_sponsor_34` spons
+            inner join civicrm_contribution ctrb ON ctrb.id = spons.entity_id
+          where
+            spons.sponsorship_for_event_192
+            AND ctrb.contribution_status_id = 1
+        ) regforspons
+          ON regforspons.contact_id = pdet.registering_for_organization_lis_179
+            AND regforspons.event_id = {$this->_aliases['civicrm_participant']}.event_id
       ";
     }
     if ($this->isTableSelected('event_sponsor_employee')) {
       $this->_from .= "
-        LEFT JOIN civicrm_contribution emplcontrib
-          ON emplcontrib.contact_id = {$this->_aliases['civicrm_contact']}.employer_id
-            AND emplcontrib.contribution_status_id = 1
-        LEFT JOIN civicrm_value_event_sponsor_34 emplspons
-          ON emplspons.entity_id = emplcontrib.id
-            AND emplspons.sponsorship_for_event_192 = {$this->_aliases['civicrm_participant']}.event_id
+        LEFT JOIN (
+          SELECT
+            ctrb.contact_id,
+            spons.sponsorship_for_event_192 as event_id,
+            spons.sponsorship_level_193 as level
+          FROM
+            `civicrm_value_event_sponsor_34` spons
+            inner join civicrm_contribution ctrb ON ctrb.id = spons.entity_id
+          where
+            spons.sponsorship_for_event_192
+            AND ctrb.contribution_status_id = 1
+        ) emplspons
+          ON emplspons.contact_id = {$this->_aliases['civicrm_contact']}.employer_id
+            AND regforspons.event_id = {$this->_aliases['civicrm_participant']}.event_id
       ";
     }
   }
@@ -800,21 +817,13 @@ ORDER BY  cv.label
 
       // Handle regfor-sponsor-level
       if (array_key_exists('event_sponsor_registering_for_sponsorship_level_regfor', $row)) {
-        $sponsorshipLevelOptions = $this->_getSponsorshipLevelOptions();
-        $sponsorLevel = $row['event_sponsor_registering_for_sponsorship_level_regfor'];
-        if ($sponsorshipLevelOptions[$sponsorLevel]) {
-          $rows[$rowNum]['event_sponsor_registering_for_sponsorship_level_regfor'] = $sponsorshipLevelOptions[$sponsorLevel];
-        }
+        $rows[$rowNum]['event_sponsor_registering_for_sponsorship_level_regfor'] = $this->_alterDisplaySponsorshipLevels($rows[$rowNum]['event_sponsor_registering_for_sponsorship_level_regfor']);
         $entryFound = TRUE;
       }
 
       // Handle employer-sponsor-level
       if (array_key_exists('event_sponsor_employee_sponsorship_level_empl', $row)) {
-        $sponsorshipLevelOptions = $this->_getSponsorshipLevelOptions();
-        $sponsorLevel = $row['event_sponsor_employee_sponsorship_level_empl'];
-        if ($sponsorshipLevelOptions[$sponsorLevel]) {
-          $rows[$rowNum]['event_sponsor_employee_sponsorship_level_empl'] = $sponsorshipLevelOptions[$sponsorLevel];
-        }
+        $rows[$rowNum]['event_sponsor_employee_sponsorship_level_empl'] = $this->_alterDisplaySponsorshipLevels($rows[$rowNum]['event_sponsor_employee_sponsorship_level_empl']);
         $entryFound = TRUE;
       }
 
@@ -973,4 +982,16 @@ ORDER BY  cv.label
     return $ret;
   }
 
+  /**
+   * Given a value for one of the columns reflecting the "Event Sponsorsip Level"
+   * field, which is a group_concat(), split by comma, replace individuals values
+   * with the labels, and re-join by comma.
+   */
+  private function _alterDisplaySponsorshipLevels($rowValue) {
+    $sponsorshipLevelOptions = $this->_getSponsorshipLevelOptions();
+    $sponsorLevels = array_flip(explode(',', $rowValue));
+    $sponsorLevelLabels = array_intersect_key($sponsorshipLevelOptions, $sponsorLevels);
+    sort($sponsorLevelLabels);
+    return implode(', ', $sponsorLevelLabels);
+  }
 }
