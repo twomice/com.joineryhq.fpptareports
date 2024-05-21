@@ -904,16 +904,15 @@ ORDER BY  cv.label
       $id = CRM_Utils_Array::value('civicrm_participant_participant_record', $row);
 
       if ($displayName && $cid && $id) {
-        $url = CRM_Report_Utils_Report::getNextUrl('contact/detail',
-          "reset=1&force=1&id_op=eq&id_value=$cid",
-          $this->_absoluteUrl, $this->_id, $this->_drilldownReport
+        $url = CRM_Utils_System::url('civicrm/contact/view',
+          "reset=1&cid=$cid"
         );
 
         $viewUrl = CRM_Utils_System::url("civicrm/contact/view/participant",
           "reset=1&id=$id&cid=$cid&action=view&context=participant"
         );
 
-        $contactTitle = E::ts('View Contact Details');
+        $contactTitle = E::ts('View Contact Record');
         $participantTitle = E::ts('View Participant Record');
 
         $rows[$rowNum]['civicrm_contact_sort_name_linked'] = "<a title='$contactTitle' href=$url>$displayName</a>";
