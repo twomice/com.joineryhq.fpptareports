@@ -36,19 +36,57 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
   public $_drilldownReport = ['event/income' => 'Link to Detail Report'];
 
   /**
+   * Array of group-based yes/no columns. Can't populate this
+   * here because we'll use E::ts(), so we populate it in __construct().
+   * Format is:
+   *  [
+   *    85 => [
+   *      'label' => E::ts('Is FPPTA Education Commitee?'),
+   *      'value' => E::ts('Education'),
+   *    ],
+   *    [group_id] => [
+   *      'label' => [column label]
+   *      'value' => [string to display if participant is group member]
+   *    ],
+   *  ]
+   * @var array
+   */
+  private $groupColumnMetadata = [];
+
+  /**
    * Class constructor.
    */
   public function __construct() {
-    $roleOptionIdPerName = $this->_getParticipantRoleOptionIdPerName();
-    // Group names contain the id, so we might as well hard-code.
-    $groupIdPerName = [
-      'boardmember' => 86,
-      'educationcomm' => 85,
-      'servicevendor' => 87,
-      'volunteer' => 89,
-      'moderator' => 90,
-      'staff' => 91,
+
+    // See docblock for this class variable.
+    $this->groupColumnMetadata = [
+      85 => [
+        'label' => E::ts('Is FPPTA Education Commitee?'),
+        'value' => E::ts('Education'),
+      ],
+      87 => [
+        'label' => E::ts('Is FPPTA Service Vendor?'),
+        'value' => E::ts('Vendor'),
+      ],
+      86 => [
+        'label' => E::ts('Is FPPTA Board Member?'),
+        'value' => E::ts('Board'),
+      ],
+      90 => [
+        'label' => E::ts('Is Moderator?'),
+        'value' => E::ts('Moderator'),
+      ],
+      89 => [
+        'label' => E::ts('Is Volunteer?'),
+        'value' => E::ts('Volunteer'),
+      ],
+      91 => [
+        'label' => E::ts('Is Staff?'),
+        'value' => E::ts('Staff'),
+      ],
     ];
+
+    $roleOptionIdPerName = $this->_getParticipantRoleOptionIdPerName();
 
     $this->_autoIncludeIndexedFieldsAsOrderBys = 1;
 
@@ -407,35 +445,6 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
           ],
         ],
       ],
-      'civicrm_group_contact' => [
-        'fields' => [
-          'is_group_vendors' => [
-            'title' => E::ts('Is FPPTA Service Vendor?'),
-            'dbAlias' => 'if(group_contact_civireport.group_id in (' . $groupIdPerName['servicevendor'] . '), "Vendor", "")',
-          ],
-          'is_group_board' => [
-            'title' => E::ts('Is FPPTA Board Member?'),
-            'dbAlias' => 'if(group_contact_civireport.group_id in (' . $groupIdPerName['boardmember'] . '), "Board", "")',
-          ],
-          'is_group_ed' => [
-            'title' => E::ts('Is FPPTA Education Commitee?'),
-            'dbAlias' => 'if(group_contact_civireport.group_id in (' . $groupIdPerName['educationcomm'] . '), "Education", "")',
-          ],
-          'is_group_moderator' => [
-            'title' => E::ts('Is Moderator?'),
-            'dbAlias' => 'if(group_contact_civireport.group_id in (' . $groupIdPerName['moderator'] . '), "Moderator", "")',
-          ],
-          'is_group_volunteer' => [
-            'title' => E::ts('Is Volunteer?'),
-            'dbAlias' => 'if(group_contact_civireport.group_id in (' . $groupIdPerName['volunteer'] . '), "Volunteer", "")',
-          ],
-          'is_group_staff' => [
-            'title' => E::ts('Is Staff?'),
-            'dbAlias' => 'if(group_contact_civireport.group_id in (' . $groupIdPerName['staff'] . '), "Staff", "")',
-          ],
-        ],
-        'grouping' => 'fppta-group-fields',
-      ],
       'civicrm_membership' => [
         'dao' => 'CRM_Member_DAO_Membership',
         'fields' => [
@@ -497,6 +506,18 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
         ],
       ],
     ];
+
+    foreach ($this->groupColumnMetadata as $groupId => $meta) {
+      $this->_columns['civicrm_group_contact_' . $groupId] = [
+        'fields' => [
+          'is_group_' . $groupId => [
+            'title' => $meta['label'],
+            'dbAlias' => 'if(group_contact_' . $groupId . '_civireport.id, "' . $meta['value'] . '", "")',
+          ],
+        ],
+        'grouping' => 'fppta-group-fields',
+      ];
+    }
 
     // CRM-17115 avoid duplication of sort_name - would be better to standardise name
     // & behaviour across reports but trying for no change at this point.
@@ -708,6 +729,18 @@ ORDER BY  cv.label
           ON emplspons.contact_id = {$this->_aliases['civicrm_contact']}.employer_id
             AND regforspons.event_id = {$this->_aliases['civicrm_participant']}.event_id
       ";
+    }
+
+    foreach ($this->groupColumnMetadata as $groupId => $meta) {
+      $groupTableName = 'civicrm_group_contact_' . $groupId;
+      if ($this->isTableSelected($groupTableName)) {
+        $this->_from .= "
+              LEFT JOIN civicrm_group_contact {$this->_aliases[$groupTableName]}
+                    ON {$this->_aliases[$groupTableName]}.contact_id = {$this->_aliases['civicrm_participant']}.contact_id
+                       AND {$this->_aliases[$groupTableName]}.status = 'added'
+                       AND {$this->_aliases[$groupTableName]}.group_id = $groupId
+        ";
+      }
     }
   }
 
@@ -993,4 +1026,5 @@ ORDER BY  cv.label
     sort($sponsorLevelLabels);
     return implode(', ', $sponsorLevelLabels);
   }
+
 }
