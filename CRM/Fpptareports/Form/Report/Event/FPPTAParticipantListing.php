@@ -706,7 +706,7 @@ ORDER BY  cv.label
             inner join civicrm_contribution ctrb ON ctrb.id = spons.entity_id
           where
             spons.sponsorship_for_event_192
-            AND ctrb.contribution_status_id = 1
+            AND ctrb.contribution_status_id in (1,2,5,6,8)
         ) regforspons
           ON regforspons.contact_id = pdet.registering_for_organization_lis_179
             AND regforspons.event_id = {$this->_aliases['civicrm_participant']}.event_id
@@ -724,7 +724,7 @@ ORDER BY  cv.label
             inner join civicrm_contribution ctrb ON ctrb.id = spons.entity_id
           where
             spons.sponsorship_for_event_192
-            AND ctrb.contribution_status_id = 1
+            AND ctrb.contribution_status_id in (1,2,5,6,8)
         ) emplspons
           ON emplspons.contact_id = {$this->_aliases['civicrm_contact']}.employer_id
             AND emplspons.event_id = {$this->_aliases['civicrm_participant']}.event_id
