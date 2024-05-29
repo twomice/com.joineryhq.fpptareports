@@ -727,7 +727,7 @@ ORDER BY  cv.label
             AND ctrb.contribution_status_id = 1
         ) emplspons
           ON emplspons.contact_id = {$this->_aliases['civicrm_contact']}.employer_id
-            AND regforspons.event_id = {$this->_aliases['civicrm_participant']}.event_id
+            AND emplspons.event_id = {$this->_aliases['civicrm_participant']}.event_id
       ";
     }
 
