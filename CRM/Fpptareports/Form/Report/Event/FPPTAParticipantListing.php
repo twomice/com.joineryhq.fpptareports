@@ -445,16 +445,22 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
           ],
         ],
       ],
-      'civicrm_membership' => [
+      'civicrm_membership_assoc' => [
         'dao' => 'CRM_Member_DAO_Membership',
         'fields' => [
           'is_member_assoc' => [
             'title' => E::ts('Is Member: Associate?'),
-            'dbAlias' => 'if(civicrm_membership_status.id IS NOT NULL AND membership_civireport.membership_type_id IN (1), "Associate", "")',
+            'dbAlias' => 'if(membership_assoc_status.id IS NOT NULL AND membership_assoc.id IS NOT NULL, "Associate", "")',
           ],
-          'is_member_pensionboard' => [
+        ],
+        'grouping' => 'fppta-member-fields',
+      ],
+      'civicrm_membership_pens' => [
+        'dao' => 'CRM_Member_DAO_Membership',
+        'fields' => [
+          'is_member_pens' => [
             'title' => E::ts('Is Member: Pension Board?'),
-            'dbAlias' => 'if(civicrm_membership_status.id IS NOT NULL AND membership_civireport.membership_type_id IN (2), "Pension Board", "")',
+            'dbAlias' => 'if(membership_pens_status.id IS NOT NULL AND membership_pens.id IS NOT NULL, "Pension Board", "")',
           ],
         ],
         'grouping' => 'fppta-member-fields',
@@ -649,13 +655,24 @@ ORDER BY  cv.label
                      AND {$this->_aliases['civicrm_group_contact']}.status = 'added'
       ";
     }
-    if ($this->isTableSelected('civicrm_membership')) {
+    if ($this->isTableSelected('civicrm_membership_assoc')) {
       $this->_from .= "
-            LEFT JOIN civicrm_membership {$this->_aliases['civicrm_membership']}
-                  ON {$this->_aliases['civicrm_membership']}.contact_id = {$this->_aliases['civicrm_participant']}.contact_id
-            LEFT JOIN civicrm_membership_status
-                  ON civicrm_membership_status.id = {$this->_aliases['civicrm_membership']}.status_id
-                     AND civicrm_membership_status.is_current_member
+            LEFT JOIN civicrm_membership membership_assoc
+                  ON membership_assoc.contact_id = {$this->_aliases['civicrm_participant']}.contact_id
+                    AND membership_assoc.membership_type_id = 1
+            LEFT JOIN civicrm_membership_status membership_assoc_status
+                  ON membership_assoc_status.id = membership_assoc.status_id
+                     AND membership_assoc_status.is_current_member
+      ";
+    }
+    if ($this->isTableSelected('civicrm_membership_pens')) {
+      $this->_from .= "
+            LEFT JOIN civicrm_membership membership_pens
+                  ON membership_pens.contact_id = {$this->_aliases['civicrm_participant']}.contact_id
+                    AND membership_pens.membership_type_id = 2
+            LEFT JOIN civicrm_membership_status membership_pens_status
+                  ON membership_pens_status.id = membership_pens.status_id
+                     AND membership_pens_status.is_current_member
       ";
     }
 
