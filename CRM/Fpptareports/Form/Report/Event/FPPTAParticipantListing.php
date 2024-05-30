@@ -416,32 +416,32 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
         'fields' => [
           'trxn_date' => [
             'title' => E::ts('Payment Date'),
-            'dbAlias' => 'group_concat(ft_civireport.trxn_date ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
+            'dbAlias' => 'group_concat(distinct ft_civireport.trxn_date ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
           ],
           'trxn_payment_instrument_id' => [
             'name' => 'payment_instrument_id',
             'title' => E::ts('Payment: Payment Method'),
-            'dbAlias' => 'group_concat(ft_civireport.payment_instrument_id ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
+            'dbAlias' => 'group_concat(distinct ft_civireport.payment_instrument_id ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
           ],
           'check_number' => [
             'title' => E::ts('Check Number'),
-            'dbAlias' => 'group_concat(ft_civireport.check_number ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
+            'dbAlias' => 'group_concat(distinct ft_civireport.check_number ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
           ],
           'total_amount' => [
             'title' => E::ts('Payment Amount'),
-            'dbAlias' => 'group_concat(ft_civireport.total_amount ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
+            'dbAlias' => 'group_concat(distinct ft_civireport.total_amount ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
           ],
           'fee_amount' => [
             'title' => E::ts('Payment Fee'),
-            'dbAlias' => 'group_concat(ft_civireport.fee_amount ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
+            'dbAlias' => 'group_concat(distinct ft_civireport.fee_amount ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
           ],
           'net_amount' => [
             'title' => E::ts('Payment Net'),
-            'dbAlias' => 'group_concat(ft_civireport.net_amount ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
+            'dbAlias' => 'group_concat(distinct ft_civireport.net_amount ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
           ],
           'pan_truncation' => [
             'title' => E::ts('CC Last 4'),
-            'dbAlias' => 'group_concat(ft_civireport.pan_truncation ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
+            'dbAlias' => 'group_concat(distinct ft_civireport.pan_truncation ORDER BY ft_civireport.id ASC SEPARATOR "' . CRM_Core_DAO::VALUE_SEPARATOR . '")',
           ],
         ],
       ],
@@ -463,8 +463,8 @@ class CRM_Fpptareports_Form_Report_Event_FPPTAParticipantListing extends CRM_Rep
         'dao' => 'CRM_Price_DAO_LineItem',
         'fields' => [
           'is_booth' => [
-            'title' => E::ts('Requested exhibitor booth?'),
-            'dbAlias' => 'if(line_item_booth_civireport.id IS NOT NULL, "Booth", "")',
+            'title' => E::ts('Org employee requested exhibitor booth?'),
+            'dbAlias' => 'if(group_concat(cw_line_item_booth.id) > "", "Booth", "")',
           ],
         ],
         'grouping' => 'fppta-booth-fields',
@@ -680,18 +680,6 @@ ORDER BY  cv.label
                      line_item_civireport.qty > 0
       ";
     }
-    if ($this->isTableSelected('civicrm_line_item_booth')) {
-      $this->_from .= "
-            LEFT JOIN civicrm_value_event_metadat_35 emeta
-                  ON emeta.entity_id = {$this->_aliases['civicrm_participant']}.event_id
-            LEFT JOIN civicrm_line_item {$this->_aliases['civicrm_line_item_booth']}
-                  ON {$this->_aliases['civicrm_line_item_booth']}.entity_table = 'civicrm_participant' AND
-                     {$this->_aliases['civicrm_line_item_booth']}.entity_id = {$this->_aliases['civicrm_participant']}.id AND
-                     {$this->_aliases['civicrm_line_item_booth']}.qty > 0 AND
-                     {$this->_aliases['civicrm_line_item_booth']}.price_field_id = emeta.booth_selection_price_field_194
-
-      ";
-    }
     if ($this->isTableSelected('event_sponsor_registering_for')) {
       $this->_from .= "
         LEFT JOIN civicrm_value_participant_d_21 pdet
@@ -742,6 +730,22 @@ ORDER BY  cv.label
         ";
       }
     }
+
+    if ($this->isTableSelected('civicrm_line_item_booth')) {
+      $this->_from .= "
+            LEFT JOIN civicrm_contact cw on contact_civireport.employer_id = cw.employer_id
+            LEFT JOIN civicrm_participant cwp on cwp.contact_id = cw.id and cwp.event_id = participant_civireport.event_id
+            LEFT JOIN civicrm_value_event_metadat_35 cwemeta
+              ON cwemeta.entity_id = cwp.event_id
+
+            LEFT JOIN civicrm_line_item cw_line_item_booth
+              ON cw_line_item_booth.entity_table = 'civicrm_participant'
+                AND cw_line_item_booth.entity_id = cwp.id
+                AND cw_line_item_booth.qty > 0
+                AND cw_line_item_booth.price_field_id = cwemeta.booth_selection_price_field_194
+      ";
+    }
+
   }
 
   public function groupBy() {
