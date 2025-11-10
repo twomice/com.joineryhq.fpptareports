@@ -77,6 +77,10 @@ class CRM_Fpptareports_Form_Report_Member_FPPTAMemberStartEnd extends CRM_Report
             'title' => E::ts('Membership End Date'),
             'default' => TRUE,
           ],
+          'membership_type_id' => [
+            'title' => E::ts('Membership Type'),
+            'default' => TRUE,
+          ],
         ],
         'grouping' => 'membership-fields',
         'filters' => [
@@ -148,6 +152,7 @@ class CRM_Fpptareports_Form_Report_Member_FPPTAMemberStartEnd extends CRM_Report
   public function alterDisplay(&$rows) {
     $entryFound = FALSE;
     $activityTypes = CRM_Activity_BAO_Activity::buildOptions('activity_type_id');
+    $membershipTypes = CRM_Member_BAO_Membership::buildOptions('membership_type_id');
     foreach ($rows as $rowNum => $row) {
       // Convert display name to link
       $displayName = CRM_Utils_Array::value('civicrm_contact_sort_name_linked', $row);
@@ -165,6 +170,11 @@ class CRM_Fpptareports_Form_Report_Member_FPPTAMemberStartEnd extends CRM_Report
 
       if (array_key_exists('civicrm_activity_activity_type_id', $row)) {
         $rows[$rowNum]['civicrm_activity_activity_type_id'] = $activityTypes[$rows[$rowNum]['civicrm_activity_activity_type_id']];
+        $entryFound = TRUE;
+      }
+
+      if (array_key_exists('civicrm_membership_membership_type_id', $row)) {
+        $rows[$rowNum]['civicrm_membership_membership_type_id'] = $membershipTypes[$rows[$rowNum]['civicrm_membership_membership_type_id']];
         $entryFound = TRUE;
       }
       // skip looking further in rows, if first row itself doesn't
