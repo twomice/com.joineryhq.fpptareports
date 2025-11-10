@@ -68,8 +68,9 @@ class CRM_Fpptareports_Form_Report_Member_FPPTAMembersStarting extends CRM_Fppta
     }
     $startingPlaceholderString = implode(', ', $startingPlaceholders);
     $startingMaxSql = "
-      select source_record_id, max(id) as activity_id
+      select a.source_record_id, max(a.id) as activity_id
       from civicrm_activity a
+        inner join civicrm_membership m on m.id = a.source_record_id
       where
         1
         and (
@@ -83,6 +84,8 @@ class CRM_Fpptareports_Form_Report_Member_FPPTAMembersStarting extends CRM_Fppta
           )
         )
         and activity_date_time between '$startingMinActivityDateTime' and '$startingMaxActivityDateTime'
+        and m.owner_membership_id is null
+        and m.membership_type_id in (". self::MEMBERSHIP_TYPE_IDS_IN . ")
       group by source_record_id
     ";
     $startingMaxSql = CRM_Core_DAO::composeQuery($startingMaxSql, $startingParams);
@@ -95,8 +98,6 @@ class CRM_Fpptareports_Form_Report_Member_FPPTAMembersStarting extends CRM_Fppta
       where
         1
         and not c.is_deleted
-        and m.owner_membership_id is null
-        and m.membership_type_id in (". self::MEMBERSHIP_TYPE_IDS_IN . ")
     ";
     return $query;
   }
