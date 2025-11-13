@@ -24,7 +24,7 @@ class CRM_Fpptareports_Form_Report_Member_FPPTAMemberStartEnd extends CRM_Report
   const MEMBERSHIP_TYPE_IDS_IN = '1, 2';
 
   protected $yearFilterLabel = "";
-  
+
   protected $_customGroupExtends = [
     'Member',
     'Contact',
@@ -60,6 +60,14 @@ class CRM_Fpptareports_Form_Report_Member_FPPTAMemberStartEnd extends CRM_Report
             'default' => '1',
             'default_weight' => '0',
             'default_order' => 'ASC',
+          ],
+        ],
+        'filters' => [
+          'contact_type' => [
+            'default' => 'Organization',
+            'operatorType' => CRM_Report_Form::OP_STRING,
+            'default_op' => 'eq',
+            'no_display' => TRUE,
           ],
         ],
       ],
@@ -195,4 +203,5 @@ class CRM_Fpptareports_Form_Report_Member_FPPTAMemberStartEnd extends CRM_Report
     }
     return $ret;
   }
+
 }
